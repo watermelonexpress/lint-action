@@ -2450,6 +2450,12 @@ function setopts (self, pattern, options) {
     pattern = "**/" + pattern
   }
 
+  self.windowsPathsNoEscape = !!options.windowsPathsNoEscape ||
+    options.allowWindowsEscape === false
+  if (self.windowsPathsNoEscape) {
+    pattern = pattern.replace(/\\/g, '/')
+  }
+
   self.silent = !!options.silent
   self.pattern = pattern
   self.strict = options.strict !== false
@@ -2505,8 +2511,6 @@ function setopts (self, pattern, options) {
   // Note that they are not supported in Glob itself anyway.
   options.nonegate = true
   options.nocomment = true
-  // always treat \ in patterns as escapes, not path separators
-  options.allowWindowsEscape = true
 
   self.minimatch = new Minimatch(pattern, options)
   self.options = self.minimatch.options
@@ -5385,7 +5389,7 @@ function onceStrict (fn) {
 /***/ ((module) => {
 
 "use strict";
-function _createForOfIteratorHelper(o,allowArrayLike){var it=typeof Symbol!=="undefined"&&o[Symbol.iterator]||o["@@iterator"];if(!it){if(Array.isArray(o)||(it=_unsupportedIterableToArray(o))||allowArrayLike&&o&&typeof o.length==="number"){if(it)o=it;var i=0;var F=function F(){};return{s:F,n:function n(){if(i>=o.length)return{done:true};return{done:false,value:o[i++]}},e:function e(_e2){throw _e2},f:F}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var normalCompletion=true,didErr=false,err;return{s:function s(){it=it.call(o)},n:function n(){var step=it.next();normalCompletion=step.done;return step},e:function e(_e3){didErr=true;err=_e3},f:function f(){try{if(!normalCompletion&&it["return"]!=null)it["return"]()}finally{if(didErr)throw err}}}}function _defineProperty(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true})}else{obj[key]=value}return obj}function _slicedToArray(arr,i){return _arrayWithHoles(arr)||_iterableToArrayLimit(arr,i)||_unsupportedIterableToArray(arr,i)||_nonIterableRest()}function _nonIterableRest(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}function _unsupportedIterableToArray(o,minLen){if(!o)return;if(typeof o==="string")return _arrayLikeToArray(o,minLen);var n=Object.prototype.toString.call(o).slice(8,-1);if(n==="Object"&&o.constructor)n=o.constructor.name;if(n==="Map"||n==="Set")return Array.from(o);if(n==="Arguments"||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))return _arrayLikeToArray(o,minLen)}function _arrayLikeToArray(arr,len){if(len==null||len>arr.length)len=arr.length;for(var i=0,arr2=new Array(len);i<len;i++){arr2[i]=arr[i]}return arr2}function _iterableToArrayLimit(arr,i){var _i=arr==null?null:typeof Symbol!=="undefined"&&arr[Symbol.iterator]||arr["@@iterator"];if(_i==null)return;var _arr=[];var _n=true;var _d=false;var _s,_e;try{for(_i=_i.call(arr);!(_n=(_s=_i.next()).done);_n=true){_arr.push(_s.value);if(i&&_arr.length===i)break}}catch(err){_d=true;_e=err}finally{try{if(!_n&&_i["return"]!=null)_i["return"]()}finally{if(_d)throw _e}}return _arr}function _arrayWithHoles(arr){if(Array.isArray(arr))return arr}module.exports=function(input){if(!input)return[];if(typeof input!=="string"||input.match(/^\s+$/))return[];var lines=input.split("\n");if(lines.length===0)return[];var files=[];var currentFile=null;var currentChunk=null;var deletedLineCounter=0;var addedLineCounter=0;var currentFileChanges=null;var normal=function normal(line){var _currentChunk;(_currentChunk=currentChunk)===null||_currentChunk===void 0?void 0:_currentChunk.changes.push({type:"normal",normal:true,ln1:deletedLineCounter++,ln2:addedLineCounter++,content:line});currentFileChanges.oldLines--;currentFileChanges.newLines--};var start=function start(line){var _parseFiles;var _ref=(_parseFiles=parseFiles(line))!==null&&_parseFiles!==void 0?_parseFiles:[],_ref2=_slicedToArray(_ref,2),fromFileName=_ref2[0],toFileName=_ref2[1];currentFile={chunks:[],deletions:0,additions:0,from:fromFileName,to:toFileName};files.push(currentFile)};var restart=function restart(){if(!currentFile||currentFile.chunks.length)start()};var newFile=function newFile(){restart();currentFile["new"]=true;currentFile.from="/dev/null"};var deletedFile=function deletedFile(){restart();currentFile.deleted=true;currentFile.to="/dev/null"};var index=function index(line){restart();currentFile.index=line.split(" ").slice(1)};var fromFile=function fromFile(line){restart();currentFile.from=parseOldOrNewFile(line)};var toFile=function toFile(line){restart();currentFile.to=parseOldOrNewFile(line)};var toNumOfLines=function toNumOfLines(number){return+(number||1)};var chunk=function chunk(line,match){if(!currentFile)return;var _match$slice=match.slice(1),_match$slice2=_slicedToArray(_match$slice,4),oldStart=_match$slice2[0],oldNumLines=_match$slice2[1],newStart=_match$slice2[2],newNumLines=_match$slice2[3];deletedLineCounter=+oldStart;addedLineCounter=+newStart;currentChunk={content:line,changes:[],oldStart:+oldStart,oldLines:toNumOfLines(oldNumLines),newStart:+newStart,newLines:toNumOfLines(newNumLines)};currentFileChanges={oldLines:toNumOfLines(oldNumLines),newLines:toNumOfLines(newNumLines)};currentFile.chunks.push(currentChunk)};var del=function del(line){if(!currentChunk)return;currentChunk.changes.push({type:"del",del:true,ln:deletedLineCounter++,content:line});currentFile.deletions++;currentFileChanges.oldLines--};var add=function add(line){if(!currentChunk)return;currentChunk.changes.push({type:"add",add:true,ln:addedLineCounter++,content:line});currentFile.additions++;currentFileChanges.newLines--};var eof=function eof(line){var _currentChunk$changes3;if(!currentChunk)return;var _currentChunk$changes=currentChunk.changes.slice(-1),_currentChunk$changes2=_slicedToArray(_currentChunk$changes,1),mostRecentChange=_currentChunk$changes2[0];currentChunk.changes.push((_currentChunk$changes3={type:mostRecentChange.type},_defineProperty(_currentChunk$changes3,mostRecentChange.type,true),_defineProperty(_currentChunk$changes3,"ln1",mostRecentChange.ln1),_defineProperty(_currentChunk$changes3,"ln2",mostRecentChange.ln2),_defineProperty(_currentChunk$changes3,"ln",mostRecentChange.ln),_defineProperty(_currentChunk$changes3,"content",line),_currentChunk$changes3))};var schemaHeaders=[[/^diff\s/,start],[/^new file mode \d+$/,newFile],[/^deleted file mode \d+$/,deletedFile],[/^index\s[\da-zA-Z]+\.\.[\da-zA-Z]+(\s(\d+))?$/,index],[/^---\s/,fromFile],[/^\+\+\+\s/,toFile],[/^@@\s+-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/,chunk],[/^\\ No newline at end of file$/,eof]];var schemaContent=[[/^-/,del],[/^\+/,add],[/^\s+/,normal]];var parseContentLine=function parseContentLine(line){var _iterator=_createForOfIteratorHelper(schemaContent),_step;try{for(_iterator.s();!(_step=_iterator.n()).done;){var _step$value=_slicedToArray(_step.value,2),pattern=_step$value[0],handler=_step$value[1];var match=line.match(pattern);if(match){handler(line,match);break}}}catch(err){_iterator.e(err)}finally{_iterator.f()}if(currentFileChanges.oldLines===0&&currentFileChanges.newLines===0){currentFileChanges=null}};var parseHeaderLine=function parseHeaderLine(line){var _iterator2=_createForOfIteratorHelper(schemaHeaders),_step2;try{for(_iterator2.s();!(_step2=_iterator2.n()).done;){var _step2$value=_slicedToArray(_step2.value,2),pattern=_step2$value[0],handler=_step2$value[1];var match=line.match(pattern);if(match){handler(line,match);break}}}catch(err){_iterator2.e(err)}finally{_iterator2.f()}};var parseLine=function parseLine(line){if(currentFileChanges){parseContentLine(line)}else{parseHeaderLine(line)}return};var _iterator3=_createForOfIteratorHelper(lines),_step3;try{for(_iterator3.s();!(_step3=_iterator3.n()).done;){var line=_step3.value;parseLine(line)}}catch(err){_iterator3.e(err)}finally{_iterator3.f()}return files};var fileNameDiffRegex=/(a|i|w|c|o|1|2)\/.*(?=["']? ["']?(b|i|w|c|o|1|2)\/)|(b|i|w|c|o|1|2)\/.*$/g;var gitFileHeaderRegex=/^(a|b|i|w|c|o|1|2)\//;var parseFiles=function parseFiles(line){var fileNames=line===null||line===void 0?void 0:line.match(fileNameDiffRegex);return fileNames===null||fileNames===void 0?void 0:fileNames.map(function(fileName){return fileName.replace(gitFileHeaderRegex,"").replace(/("|')$/,"")})};var qoutedFileNameRegex=/^\\?['"]|\\?['"]$/g;var parseOldOrNewFile=function parseOldOrNewFile(line){var fileName=leftTrimChars(line,"-+").trim();fileName=removeTimeStamp(fileName);return fileName.replace(qoutedFileNameRegex,"").replace(gitFileHeaderRegex,"")};var leftTrimChars=function leftTrimChars(string,trimmingChars){string=makeString(string);if(!trimmingChars&&String.prototype.trimLeft)return string.trimLeft();var trimmingString=formTrimmingString(trimmingChars);return string.replace(new RegExp("^".concat(trimmingString,"+")),"")};var timeStampRegex=/\t.*|\d{4}-\d\d-\d\d\s\d\d:\d\d:\d\d(.\d+)?\s(\+|-)\d\d\d\d/;var removeTimeStamp=function removeTimeStamp(string){var timeStamp=timeStampRegex.exec(string);if(timeStamp){string=string.substring(0,timeStamp.index).trim()}return string};var formTrimmingString=function formTrimmingString(trimmingChars){if(trimmingChars===null||trimmingChars===undefined)return"\\s";else if(trimmingChars instanceof RegExp)return trimmingChars.source;return"[".concat(makeString(trimmingChars).replace(/([.*+?^=!:${}()|[\]/\\])/g,"\\$1"),"]")};var makeString=function makeString(itemToConvert){return(itemToConvert!==null&&itemToConvert!==void 0?itemToConvert:"")+""};
+function _createForOfIteratorHelper(o,allowArrayLike){var it=typeof Symbol!=="undefined"&&o[Symbol.iterator]||o["@@iterator"];if(!it){if(Array.isArray(o)||(it=_unsupportedIterableToArray(o))||allowArrayLike&&o&&typeof o.length==="number"){if(it)o=it;var i=0;var F=function F(){};return{s:F,n:function n(){if(i>=o.length)return{done:true};return{done:false,value:o[i++]}},e:function e(_e2){throw _e2},f:F}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var normalCompletion=true,didErr=false,err;return{s:function s(){it=it.call(o)},n:function n(){var step=it.next();normalCompletion=step.done;return step},e:function e(_e3){didErr=true;err=_e3},f:function f(){try{if(!normalCompletion&&it["return"]!=null)it["return"]()}finally{if(didErr)throw err}}}}function _defineProperty(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true})}else{obj[key]=value}return obj}function _slicedToArray(arr,i){return _arrayWithHoles(arr)||_iterableToArrayLimit(arr,i)||_unsupportedIterableToArray(arr,i)||_nonIterableRest()}function _nonIterableRest(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}function _unsupportedIterableToArray(o,minLen){if(!o)return;if(typeof o==="string")return _arrayLikeToArray(o,minLen);var n=Object.prototype.toString.call(o).slice(8,-1);if(n==="Object"&&o.constructor)n=o.constructor.name;if(n==="Map"||n==="Set")return Array.from(o);if(n==="Arguments"||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))return _arrayLikeToArray(o,minLen)}function _arrayLikeToArray(arr,len){if(len==null||len>arr.length)len=arr.length;for(var i=0,arr2=new Array(len);i<len;i++){arr2[i]=arr[i]}return arr2}function _iterableToArrayLimit(arr,i){var _i=arr==null?null:typeof Symbol!=="undefined"&&arr[Symbol.iterator]||arr["@@iterator"];if(_i==null)return;var _arr=[];var _n=true;var _d=false;var _s,_e;try{for(_i=_i.call(arr);!(_n=(_s=_i.next()).done);_n=true){_arr.push(_s.value);if(i&&_arr.length===i)break}}catch(err){_d=true;_e=err}finally{try{if(!_n&&_i["return"]!=null)_i["return"]()}finally{if(_d)throw _e}}return _arr}function _arrayWithHoles(arr){if(Array.isArray(arr))return arr}module.exports=function(input){if(!input)return[];if(typeof input!=="string"||input.match(/^\s+$/))return[];var lines=input.split("\n");if(lines.length===0)return[];var files=[];var currentFile=null;var currentChunk=null;var deletedLineCounter=0;var addedLineCounter=0;var currentFileChanges=null;var normal=function normal(line){var _currentChunk;(_currentChunk=currentChunk)===null||_currentChunk===void 0?void 0:_currentChunk.changes.push({type:"normal",normal:true,ln1:deletedLineCounter++,ln2:addedLineCounter++,content:line});currentFileChanges.oldLines--;currentFileChanges.newLines--};var start=function start(line){var _parseFiles;var _ref=(_parseFiles=parseFiles(line))!==null&&_parseFiles!==void 0?_parseFiles:[],_ref2=_slicedToArray(_ref,2),fromFileName=_ref2[0],toFileName=_ref2[1];currentFile={chunks:[],deletions:0,additions:0,from:fromFileName,to:toFileName};files.push(currentFile)};var restart=function restart(){if(!currentFile||currentFile.chunks.length)start()};var newFile=function newFile(_,match){restart();currentFile["new"]=true;currentFile.newMode=match[1];currentFile.from="/dev/null"};var deletedFile=function deletedFile(_,match){restart();currentFile.deleted=true;currentFile.oldMode=match[1];currentFile.to="/dev/null"};var oldMode=function oldMode(_,match){restart();currentFile.oldMode=match[1]};var newMode=function newMode(_,match){restart();currentFile.newMode=match[1]};var index=function index(line,match){restart();currentFile.index=line.split(" ").slice(1);if(match[1]){currentFile.oldMode=currentFile.newMode=match[1].trim()}};var fromFile=function fromFile(line){restart();currentFile.from=parseOldOrNewFile(line)};var toFile=function toFile(line){restart();currentFile.to=parseOldOrNewFile(line)};var toNumOfLines=function toNumOfLines(number){return+(number||1)};var chunk=function chunk(line,match){if(!currentFile)return;var _match$slice=match.slice(1),_match$slice2=_slicedToArray(_match$slice,4),oldStart=_match$slice2[0],oldNumLines=_match$slice2[1],newStart=_match$slice2[2],newNumLines=_match$slice2[3];deletedLineCounter=+oldStart;addedLineCounter=+newStart;currentChunk={content:line,changes:[],oldStart:+oldStart,oldLines:toNumOfLines(oldNumLines),newStart:+newStart,newLines:toNumOfLines(newNumLines)};currentFileChanges={oldLines:toNumOfLines(oldNumLines),newLines:toNumOfLines(newNumLines)};currentFile.chunks.push(currentChunk)};var del=function del(line){if(!currentChunk)return;currentChunk.changes.push({type:"del",del:true,ln:deletedLineCounter++,content:line});currentFile.deletions++;currentFileChanges.oldLines--};var add=function add(line){if(!currentChunk)return;currentChunk.changes.push({type:"add",add:true,ln:addedLineCounter++,content:line});currentFile.additions++;currentFileChanges.newLines--};var eof=function eof(line){var _currentChunk$changes3;if(!currentChunk)return;var _currentChunk$changes=currentChunk.changes.slice(-1),_currentChunk$changes2=_slicedToArray(_currentChunk$changes,1),mostRecentChange=_currentChunk$changes2[0];currentChunk.changes.push((_currentChunk$changes3={type:mostRecentChange.type},_defineProperty(_currentChunk$changes3,mostRecentChange.type,true),_defineProperty(_currentChunk$changes3,"ln1",mostRecentChange.ln1),_defineProperty(_currentChunk$changes3,"ln2",mostRecentChange.ln2),_defineProperty(_currentChunk$changes3,"ln",mostRecentChange.ln),_defineProperty(_currentChunk$changes3,"content",line),_currentChunk$changes3))};var schemaHeaders=[[/^diff\s/,start],[/^new file mode (\d+)$/,newFile],[/^deleted file mode (\d+)$/,deletedFile],[/^old mode (\d+)$/,oldMode],[/^new mode (\d+)$/,newMode],[/^index\s[\da-zA-Z]+\.\.[\da-zA-Z]+(\s(\d+))?$/,index],[/^---\s/,fromFile],[/^\+\+\+\s/,toFile],[/^@@\s+-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/,chunk],[/^\\ No newline at end of file$/,eof]];var schemaContent=[[/^\\ No newline at end of file$/,eof],[/^-/,del],[/^\+/,add],[/^\s+/,normal]];var parseContentLine=function parseContentLine(line){var _iterator=_createForOfIteratorHelper(schemaContent),_step;try{for(_iterator.s();!(_step=_iterator.n()).done;){var _step$value=_slicedToArray(_step.value,2),pattern=_step$value[0],handler=_step$value[1];var match=line.match(pattern);if(match){handler(line,match);break}}}catch(err){_iterator.e(err)}finally{_iterator.f()}if(currentFileChanges.oldLines===0&&currentFileChanges.newLines===0){currentFileChanges=null}};var parseHeaderLine=function parseHeaderLine(line){var _iterator2=_createForOfIteratorHelper(schemaHeaders),_step2;try{for(_iterator2.s();!(_step2=_iterator2.n()).done;){var _step2$value=_slicedToArray(_step2.value,2),pattern=_step2$value[0],handler=_step2$value[1];var match=line.match(pattern);if(match){handler(line,match);break}}}catch(err){_iterator2.e(err)}finally{_iterator2.f()}};var parseLine=function parseLine(line){if(currentFileChanges){parseContentLine(line)}else{parseHeaderLine(line)}return};var _iterator3=_createForOfIteratorHelper(lines),_step3;try{for(_iterator3.s();!(_step3=_iterator3.n()).done;){var line=_step3.value;parseLine(line)}}catch(err){_iterator3.e(err)}finally{_iterator3.f()}return files};var fileNameDiffRegex=/(a|i|w|c|o|1|2)\/.*(?=["']? ["']?(b|i|w|c|o|1|2)\/)|(b|i|w|c|o|1|2)\/.*$/g;var gitFileHeaderRegex=/^(a|b|i|w|c|o|1|2)\//;var parseFiles=function parseFiles(line){var fileNames=line===null||line===void 0?void 0:line.match(fileNameDiffRegex);return fileNames===null||fileNames===void 0?void 0:fileNames.map(function(fileName){return fileName.replace(gitFileHeaderRegex,"").replace(/("|')$/,"")})};var qoutedFileNameRegex=/^\\?['"]|\\?['"]$/g;var parseOldOrNewFile=function parseOldOrNewFile(line){var fileName=leftTrimChars(line,"-+").trim();fileName=removeTimeStamp(fileName);return fileName.replace(qoutedFileNameRegex,"").replace(gitFileHeaderRegex,"")};var leftTrimChars=function leftTrimChars(string,trimmingChars){string=makeString(string);if(!trimmingChars&&String.prototype.trimLeft)return string.trimLeft();var trimmingString=formTrimmingString(trimmingChars);return string.replace(new RegExp("^".concat(trimmingString,"+")),"")};var timeStampRegex=/\t.*|\d{4}-\d\d-\d\d\s\d\d:\d\d:\d\d(.\d+)?\s(\+|-)\d\d\d\d/;var removeTimeStamp=function removeTimeStamp(string){var timeStamp=timeStampRegex.exec(string);if(timeStamp){string=string.substring(0,timeStamp.index).trim()}return string};var formTrimmingString=function formTrimmingString(trimmingChars){if(trimmingChars===null||trimmingChars===undefined)return"\\s";else if(trimmingChars instanceof RegExp)return trimmingChars.source;return"[".concat(makeString(trimmingChars).replace(/([.*+?^=!:${}()|[\]/\\])/g,"\\$1"),"]")};var makeString=function makeString(itemToConvert){return(itemToConvert!==null&&itemToConvert!==void 0?itemToConvert:"")+""};
 
 
 /***/ }),
@@ -6316,128 +6320,118 @@ exports["default"] = _default;
 
 /***/ }),
 
-/***/ 4207:
+/***/ 6143:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const isWindows = process.platform === 'win32' ||
-    process.env.OSTYPE === 'cygwin' ||
-    process.env.OSTYPE === 'msys'
-
-const path = __nccwpck_require__(1017)
-const COLON = isWindows ? ';' : ':'
 const isexe = __nccwpck_require__(7126)
+const { join, delimiter, sep, posix } = __nccwpck_require__(1017)
+
+const isWindows = process.platform === 'win32'
+
+// used to check for slashed in commands passed in. always checks for the posix
+// seperator on all platforms, and checks for the current separator when not on
+// a posix platform. don't use the isWindows check for this since that is mocked
+// in tests but we still need the code to actually work when called. that is also
+// why it is ignored from coverage.
+/* istanbul ignore next */
+const rSlash = new RegExp(`[${posix.sep}${sep === posix.sep ? '' : sep}]`.replace(/(\\)/g, '\\$1'))
+const rRel = new RegExp(`^\\.${rSlash.source}`)
 
 const getNotFoundError = (cmd) =>
   Object.assign(new Error(`not found: ${cmd}`), { code: 'ENOENT' })
 
-const getPathInfo = (cmd, opt) => {
-  const colon = opt.colon || COLON
-
+const getPathInfo = (cmd, {
+  path: optPath = process.env.PATH,
+  pathExt: optPathExt = process.env.PATHEXT,
+  delimiter: optDelimiter = delimiter,
+}) => {
   // If it has a slash, then we don't bother searching the pathenv.
   // just check the file itself, and that's it.
-  const pathEnv = cmd.match(/\//) || isWindows && cmd.match(/\\/) ? ['']
-    : (
-      [
-        // windows always checks the cwd first
-        ...(isWindows ? [process.cwd()] : []),
-        ...(opt.path || process.env.PATH ||
-          /* istanbul ignore next: very unusual */ '').split(colon),
-      ]
-    )
-  const pathExtExe = isWindows
-    ? opt.pathExt || process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM'
-    : ''
-  const pathExt = isWindows ? pathExtExe.split(colon) : ['']
+  const pathEnv = cmd.match(rSlash) ? [''] : [
+    // windows always checks the cwd first
+    ...(isWindows ? [process.cwd()] : []),
+    ...(optPath || /* istanbul ignore next: very unusual */ '').split(optDelimiter),
+  ]
 
   if (isWindows) {
-    if (cmd.indexOf('.') !== -1 && pathExt[0] !== '')
+    const pathExtExe = optPathExt ||
+      ['.EXE', '.CMD', '.BAT', '.COM'].join(optDelimiter)
+    const pathExt = pathExtExe.split(optDelimiter).reduce((acc, item) => {
+      acc.push(item)
+      acc.push(item.toLowerCase())
+      return acc
+    }, [])
+    if (cmd.includes('.') && pathExt[0] !== '') {
       pathExt.unshift('')
+    }
+    return { pathEnv, pathExt, pathExtExe }
   }
 
-  return {
-    pathEnv,
-    pathExt,
-    pathExtExe,
-  }
+  return { pathEnv, pathExt: [''] }
 }
 
-const which = (cmd, opt, cb) => {
-  if (typeof opt === 'function') {
-    cb = opt
-    opt = {}
-  }
-  if (!opt)
-    opt = {}
+const getPathPart = (raw, cmd) => {
+  const pathPart = /^".*"$/.test(raw) ? raw.slice(1, -1) : raw
+  const prefix = !pathPart && rRel.test(cmd) ? cmd.slice(0, 2) : ''
+  return prefix + join(pathPart, cmd)
+}
 
+const which = async (cmd, opt = {}) => {
   const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt)
   const found = []
 
-  const step = i => new Promise((resolve, reject) => {
-    if (i === pathEnv.length)
-      return opt.all && found.length ? resolve(found)
-        : reject(getNotFoundError(cmd))
+  for (const envPart of pathEnv) {
+    const p = getPathPart(envPart, cmd)
 
-    const ppRaw = pathEnv[i]
-    const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw
-
-    const pCmd = path.join(pathPart, cmd)
-    const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd
-      : pCmd
-
-    resolve(subStep(p, i, 0))
-  })
-
-  const subStep = (p, i, ii) => new Promise((resolve, reject) => {
-    if (ii === pathExt.length)
-      return resolve(step(i + 1))
-    const ext = pathExt[ii]
-    isexe(p + ext, { pathExt: pathExtExe }, (er, is) => {
-      if (!er && is) {
-        if (opt.all)
-          found.push(p + ext)
-        else
-          return resolve(p + ext)
-      }
-      return resolve(subStep(p, i, ii + 1))
-    })
-  })
-
-  return cb ? step(0).then(res => cb(null, res), cb) : step(0)
-}
-
-const whichSync = (cmd, opt) => {
-  opt = opt || {}
-
-  const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt)
-  const found = []
-
-  for (let i = 0; i < pathEnv.length; i ++) {
-    const ppRaw = pathEnv[i]
-    const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw
-
-    const pCmd = path.join(pathPart, cmd)
-    const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd
-      : pCmd
-
-    for (let j = 0; j < pathExt.length; j ++) {
-      const cur = p + pathExt[j]
-      try {
-        const is = isexe.sync(cur, { pathExt: pathExtExe })
-        if (is) {
-          if (opt.all)
-            found.push(cur)
-          else
-            return cur
+    for (const ext of pathExt) {
+      const withExt = p + ext
+      const is = await isexe(withExt, { pathExt: pathExtExe, ignoreErrors: true })
+      if (is) {
+        if (!opt.all) {
+          return withExt
         }
-      } catch (ex) {}
+        found.push(withExt)
+      }
     }
   }
 
-  if (opt.all && found.length)
+  if (opt.all && found.length) {
     return found
+  }
 
-  if (opt.nothrow)
+  if (opt.nothrow) {
     return null
+  }
+
+  throw getNotFoundError(cmd)
+}
+
+const whichSync = (cmd, opt = {}) => {
+  const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt)
+  const found = []
+
+  for (const pathEnvPart of pathEnv) {
+    const p = getPathPart(pathEnvPart, cmd)
+
+    for (const ext of pathExt) {
+      const withExt = p + ext
+      const is = isexe.sync(withExt, { pathExt: pathExtExe, ignoreErrors: true })
+      if (is) {
+        if (!opt.all) {
+          return withExt
+        }
+        found.push(withExt)
+      }
+    }
+  }
+
+  if (opt.all && found.length) {
+    return found
+  }
+
+  if (opt.nothrow) {
+    return null
+  }
 
   throw getNotFoundError(cmd)
 }
@@ -7009,11 +7003,13 @@ module.exports = Black;
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const glob = __nccwpck_require__(1957);
-const { quoteAll } = __nccwpck_require__(4411);
+const { Shescape } = __nccwpck_require__(4411);
 
 const { run } = __nccwpck_require__(9575);
 const commandExists = __nccwpck_require__(5265);
 const { initLintResult } = __nccwpck_require__(9149);
+
+const { quoteAll } = new Shescape({ shell: false });
 
 /** @typedef {import('../utils/lint-result').LintResult} LintResult */
 
@@ -7091,6 +7087,134 @@ class ClangFormat {
 }
 
 module.exports = ClangFormat;
+
+
+/***/ }),
+
+/***/ 244:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { run } = __nccwpck_require__(9575);
+const commandExists = __nccwpck_require__(5265);
+const { initLintResult } = __nccwpck_require__(9149);
+
+/** @typedef {import('../utils/lint-result').LintResult} LintResult */
+
+/**
+ * https://rust-lang.github.io/rust-clippy/
+ */
+class Clippy {
+	static get name() {
+		return "clippy";
+	}
+
+	/**
+	 * Verifies that all required programs are installed. Throws an error if programs are missing
+	 * @param {string} dir - Directory to run the linting program in
+	 * @param {string} prefix - Prefix to the lint command
+	 */
+	static async verifySetup(dir, prefix = "") {
+		// Verify that cargo is installed (required to execute clippy)
+		if (!(await commandExists("cargo"))) {
+			throw new Error("cargo is not installed");
+		}
+
+		// Verify that clippy is installed
+		try {
+			run(`${prefix} cargo clippy --version`, { dir });
+		} catch (err) {
+			throw new Error(`${this.name} is not installed`);
+		}
+	}
+
+	/**
+	 * Runs the linting program and returns the command output
+	 * @param {string} dir - Directory to run the linter in
+	 * @param {string[]} extensions - File extensions which should be linted
+	 * @param {string} args - Additional arguments to pass to the linter
+	 * @param {boolean} fix - Whether the linter should attempt to fix code style issues automatically
+	 * @param {string} prefix - Prefix to the lint command
+	 * @returns {{status: number, stdout: string, stderr: string}} - Output of the lint command
+	 */
+	static lint(dir, extensions, args = "", fix = false, prefix = "") {
+		if (extensions.length !== 1 || extensions[0] !== "rs") {
+			throw new Error(`${this.name} error: File extensions are not configurable`);
+		}
+
+		// clippy will throw an error if `--allow-dirty` is used when `--fix` isn't.
+		// in order to have tests run consistently and to help out users we remove `--allow-dirty`
+		// when not in fix
+		const localArgs = fix ? args : args.replace("--allow-dirty", "");
+
+		const fixArg = fix ? "--fix" : "";
+		return run(`${prefix} cargo clippy ${fixArg} --message-format json ${localArgs}`, {
+			dir,
+			ignoreErrors: true,
+		});
+	}
+
+	/**
+	 * Parses the output of the lint command. Determines the success of the lint process and the
+	 * severity of the identified code style violations
+	 * @param {string} dir - Directory in which the linter has been run
+	 * @param {{status: number, stdout: string, stderr: string}} output - Output of the lint command
+	 * @returns {LintResult} - Parsed lint result
+	 */
+	static parseOutput(dir, output) {
+		const lintResult = initLintResult();
+
+		const lines = output.stdout.split("\n").map((line) => {
+			let parsedLine;
+			try {
+				let normalizedLine = line;
+				if (process.platform === "win32") {
+					normalizedLine = line.replace(/\\/gi, "\\\\");
+				}
+				parsedLine = JSON.parse(normalizedLine);
+			} catch (err) {
+				throw Error(
+					`Error parsing ${this.name} JSON output: ${err.message}. Output: "${output.stdout}"`,
+				);
+			}
+			return parsedLine;
+		});
+
+		lines.forEach((line) => {
+			if (line.reason === "compiler-message") {
+				if (line.message.level === "warning") {
+					const { code, message, spans } = line.message;
+					// don't add the message counting the warnings
+					if (code !== null) {
+						lintResult.warning.push({
+							path: spans[0].file_name,
+							firstLine: spans[0].line_start,
+							lastLine: spans[0].line_end,
+							message,
+						});
+					}
+				} else if (line.message.level === "error") {
+					const { code, message, spans } = line.message;
+					// don't add the message counting the errors
+					if (code !== null) {
+						lintResult.warning.push({
+							path: spans[0].file_name,
+							firstLine: spans[0].line_start,
+							lastLine: spans[0].line_end,
+							message,
+						});
+					}
+				}
+			}
+		});
+
+		lintResult.isSuccess =
+			output.status === 0 && lintResult.warning.length === 0 && lintResult.error.length === 0;
+
+		return lintResult;
+	}
+}
+
+module.exports = Clippy;
 
 
 /***/ }),
@@ -7698,6 +7822,7 @@ module.exports = Golint;
 const Autopep8 = __nccwpck_require__(3569);
 const Black = __nccwpck_require__(9844);
 const ClangFormat = __nccwpck_require__(6632);
+const Clippy = __nccwpck_require__(244);
 const DotnetFormat = __nccwpck_require__(6216);
 const Erblint = __nccwpck_require__(9674);
 const ESLint = __nccwpck_require__(7169);
@@ -7710,14 +7835,17 @@ const PHPCodeSniffer = __nccwpck_require__(5405);
 const Prettier = __nccwpck_require__(3460);
 const Pylint = __nccwpck_require__(4963);
 const RuboCop = __nccwpck_require__(1399);
+const RustFmt = __nccwpck_require__(3421);
 const Stylelint = __nccwpck_require__(194);
 const SwiftFormatLockwood = __nccwpck_require__(8983);
 const SwiftFormatOfficial = __nccwpck_require__(1828);
 const SwiftLint = __nccwpck_require__(1439);
+const TSC = __nccwpck_require__(7540);
 const XO = __nccwpck_require__(728);
 
 const linters = {
 	// Linters
+	clippy: Clippy,
 	erblint: Erblint,
 	eslint: ESLint,
 	flake8: Flake8,
@@ -7729,6 +7857,7 @@ const linters = {
 	stylelint: Stylelint,
 	swiftlint: SwiftLint,
 	xo: XO,
+	tsc: TSC,
 
 	// Formatters (should be run after linters)
 	autopep8: Autopep8,
@@ -7737,6 +7866,7 @@ const linters = {
 	dotnet_format: DotnetFormat,
 	gofmt: Gofmt,
 	oitnb: Oitnb,
+	rustfmt: RustFmt,
 	prettier: Prettier,
 	swift_format_lockwood: SwiftFormatLockwood,
 	swift_format_official: SwiftFormatOfficial,
@@ -8359,6 +8489,95 @@ module.exports = RuboCop;
 
 /***/ }),
 
+/***/ 3421:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { run } = __nccwpck_require__(9575);
+const commandExists = __nccwpck_require__(5265);
+const { initLintResult } = __nccwpck_require__(9149);
+
+/** @typedef {import('../utils/lint-result').LintResult} LintResult */
+
+const PARSE_REGEX = /([\s\S]*?) at line (\d*):$([\s\S]*)/m;
+
+/**
+ * https://github.com/rust-lang/rustfmt
+ */
+class RustFmt {
+	static get name() {
+		return "rustfmt";
+	}
+
+	/**
+	 * Verifies that all required programs are installed. Throws an error if programs are missing
+	 * @param {string} dir - Directory to run the linting program in
+	 * @param {string} prefix - Prefix to the lint command
+	 */
+	static async verifySetup(dir, prefix = "") {
+		// Verify that cargo format is installed
+		if (!(await commandExists("cargo-fmt"))) {
+			throw new Error("Cargo format is not installed");
+		}
+	}
+
+	/**
+	 * Runs the linting program and returns the command output
+	 * @param {string} dir - Directory to run the linter in
+	 * @param {string[]} extensions - File extensions which should be linted
+	 * @param {string} args - Additional arguments to pass to the linter
+	 * @param {boolean} fix - Whether the linter should attempt to fix code style issues automatically
+	 * @param {string} prefix - Prefix to the lint command
+	 * @returns {{status: number, stdout: string, stderr: string}} - Output of the lint command
+	 */
+	static lint(dir, extensions, args = "-- --color=never", fix = false, prefix = "") {
+		if (extensions.length !== 1 || extensions[0] !== "rs") {
+			throw new Error(`${this.name} error: File extensions are not configurable`);
+		}
+		const fixArg = fix ? "" : "--check";
+		return run(`${prefix} cargo fmt ${fixArg} ${args}`, {
+			dir,
+			ignoreErrors: true,
+		});
+	}
+
+	/**
+	 * Parses the output of the lint command. Determines the success of the lint process and the
+	 * severity of the identified code style violations
+	 * @param {string} dir - Directory in which the linter has been run
+	 * @param {{status: number, stdout: string, stderr: string}} output - Output of the lint command
+	 * @returns {LintResult} - Parsed lint result
+	 */
+	static parseOutput(dir, output) {
+		const lintResult = initLintResult();
+		lintResult.isSuccess = output.status === 0;
+		if (!output.stdout) {
+			return lintResult;
+		}
+
+		const diffs = output.stdout.split(/^Diff in /gm).slice(1);
+		for (const diff of diffs) {
+			const [_, pathFull, line, message] = diff.match(PARSE_REGEX);
+			// Split on dir works for windows UNC paths, the substring strips out the
+			// left over '/' or '\\'
+			const path = pathFull.split(dir)[1].substring(1);
+			const lineNr = parseInt(line, 10);
+			lintResult.error.push({
+				path,
+				firstLine: lineNr,
+				lastLine: lineNr,
+				message,
+			});
+		}
+
+		return lintResult;
+	}
+}
+
+module.exports = RustFmt;
+
+
+/***/ }),
+
 /***/ 194:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -8724,6 +8943,112 @@ class SwiftLint {
 }
 
 module.exports = SwiftLint;
+
+
+/***/ }),
+
+/***/ 7540:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const core = __nccwpck_require__(2186);
+
+const { run } = __nccwpck_require__(9575);
+const commandExists = __nccwpck_require__(5265);
+const { initLintResult } = __nccwpck_require__(9149);
+const { getNpmBinCommand } = __nccwpck_require__(1838);
+const { removeTrailingPeriod } = __nccwpck_require__(9321);
+
+/** @typedef {import('../utils/lint-result').LintResult} LintResult */
+
+/**
+ * https://www.typescriptlang.org/docs/handbook/compiler-options.html
+ */
+class TSC {
+	static get name() {
+		return "TypeScript";
+	}
+
+	/**
+	 * Verifies that all required programs are installed. Throws an error if programs are missing
+	 * @param {string} dir - Directory to run the linting program in
+	 * @param {string} prefix - Prefix to the lint command
+	 */
+	static async verifySetup(dir, prefix = "") {
+		// Verify that NPM is installed (required to execute ESLint)
+		if (!(await commandExists("npm"))) {
+			throw new Error("NPM is not installed");
+		}
+
+		// Verify that ESLint is installed
+		const commandPrefix = prefix || getNpmBinCommand(dir);
+		try {
+			run(`${commandPrefix} tsc -v`, { dir });
+		} catch (err) {
+			throw new Error(`${this.name} is not installed`);
+		}
+	}
+
+	/**
+	 * Runs the linting program and returns the command output
+	 * @param {string} dir - Directory to run the linter in
+	 * @param {string[]} extensions - File extensions which should be linted
+	 * @param {string} args - Additional arguments to pass to the linter
+	 * @param {boolean} fix - Whether the linter should attempt to fix code style issues automatically
+	 * @param {string} prefix - Prefix to the lint command
+	 * @returns {{status: number, stdout: string, stderr: string}} - Output of the lint command
+	 */
+	static lint(dir, extensions, args = "", fix = false, prefix = "") {
+		if (fix) {
+			core.warning(`${this.name} does not support auto-fixing`);
+		}
+
+		const commandPrefix = prefix || getNpmBinCommand(dir);
+		return run(`${commandPrefix} tsc --noEmit --pretty false ${args}`, {
+			dir,
+			ignoreErrors: true,
+		});
+	}
+
+	/**
+	 * Parses the output of the lint command. Determines the success of the lint process and the
+	 * severity of the identified code style violations
+	 * @param {string} dir - Directory in which the linter has been run
+	 * @param {{status: number, stdout: string, stderr: string}} output - Output of the lint command
+	 * @returns {LintResult} - Parsed lint result
+	 */
+	static parseOutput(dir, output) {
+		const lintResult = initLintResult();
+		lintResult.isSuccess = output.status === 0;
+
+		// example: file1.ts(4,25): error TS7005: Variable 'str' implicitly has an 'any' type.
+		const regex = /^(?<file>.+)\((?<line>\d+),(?<column>\d+)\):\s(?<code>\w+)\s(?<message>.+)$/gm;
+
+		const errors = [];
+		const matches = output.stdout.matchAll(regex);
+
+		for (const match of matches) {
+			const { file, line, column, code, message } = match.groups;
+			errors.push({ file, line, column, code, message });
+		}
+
+		for (const error of errors) {
+			const { file, line, message } = error;
+
+			const entry = {
+				path: file,
+				firstLine: Number(line),
+				lastLine: Number(line),
+				message: `${removeTrailingPeriod(message)}`,
+			};
+
+			lintResult.error.push(entry);
+		}
+
+		return lintResult;
+	}
+}
+
+module.exports = TSC;
 
 
 /***/ }),
@@ -9176,6 +9501,46 @@ module.exports = require("net");
 
 /***/ }),
 
+/***/ 7561:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:fs");
+
+/***/ }),
+
+/***/ 612:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:os");
+
+/***/ }),
+
+/***/ 9411:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:path");
+
+/***/ }),
+
+/***/ 7742:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:process");
+
+/***/ }),
+
+/***/ 7261:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:util");
+
+/***/ }),
+
 /***/ 2037:
 /***/ ((module) => {
 
@@ -9189,14 +9554,6 @@ module.exports = require("os");
 
 "use strict";
 module.exports = require("path");
-
-/***/ }),
-
-/***/ 7282:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("process");
 
 /***/ }),
 
@@ -9222,11 +9579,12 @@ module.exports = require("util");
 "use strict";
 
 
-var os = __nccwpck_require__(2037);
-var process = __nccwpck_require__(7282);
-var fs = __nccwpck_require__(7147);
-var path = __nccwpck_require__(1017);
-var which = __nccwpck_require__(4207);
+var os = __nccwpck_require__(612);
+var process = __nccwpck_require__(7742);
+var fs = __nccwpck_require__(7561);
+var path = __nccwpck_require__(9411);
+var which = __nccwpck_require__(6143);
+var node_util = __nccwpck_require__(7261);
 
 function _interopNamespaceDefault(e) {
   var n = Object.create(null);
@@ -9249,59 +9607,7 @@ var fs__namespace = /*#__PURE__*/_interopNamespaceDefault(fs);
 var path__namespace = /*#__PURE__*/_interopNamespaceDefault(path);
 
 /**
- * @overview Provides functionality related to working with executables.
- * @license MPL-2.0
- */
-
-/**
- * Resolves the location of an executable given an arbitrary valid string
- * representation of that executable.
- *
- * To obtain the location of the executable this function (if necessary):
- * - Expands the provided string to a absolute path.
- * - Follows symbolic links.
- *
- * @param {object} args The arguments for this function.
- * @param {string} args.executable A string representation of the executable.
- * @param {object} deps The dependencies for this function.
- * @param {Function} deps.exists A function to check if a file exists.
- * @param {Function} deps.readlink A function to resolve (sym)links.
- * @param {Function} deps.which A function to perform a `which(1)`-like lookup.
- * @returns {string} The full path to the binary of the executable.
- * @throws {Error} If the `deps` aren't provided.
- */
-function resolveExecutable({ executable }, { exists, readlink, which }) {
-  if (readlink === undefined || which === undefined) {
-    throw new Error();
-  }
-
-  try {
-    executable = which(executable);
-  } catch (_) {
-    // For backwards compatibility return the executable even if its location
-    // cannot be obtained
-    return executable;
-  }
-
-  if (!exists(executable)) {
-    // For backwards compatibility return the executable even if there exists no
-    // file at the specified path
-    return executable;
-  }
-
-  try {
-    executable = readlink(executable);
-  } catch (_) {
-    // An error will be thrown if the executable is not a (sym)link, this is not
-    // a problem so the error is ignored
-  }
-
-  return executable;
-}
-
-/**
- * @overview Provides an API to consistently escape or quote shell arguments
- * across platforms.
+ * @overview Provides reflection functionality.
  * @license MPL-2.0
  */
 
@@ -9331,6 +9637,63 @@ const typeofFunction = "function";
 const typeofString = "string";
 
 /**
+ * Check if the given object has the given property as an own property.
+ *
+ * This custom function is used over `Object.hasOwn` because that isn't
+ * available in all supported Node.js versions.
+ *
+ * @param {object} object The object of interest.
+ * @param {string} property The property of interest.
+ * @returns {boolean} `true` if property is an own-property, `false` otherwise.
+ */
+function hasOwn(object, property) {
+  return Object.prototype.hasOwnProperty.call(object, property);
+}
+
+/**
+ * Checks if a value can be converted into a string and converts it if possible.
+ *
+ * @param {any} value The value of interest.
+ * @returns {string | null} If possible the string of `value`, otherwise `null`.
+ */
+function maybeToString(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  if (typeof value.toString !== typeofFunction) {
+    return null;
+  }
+
+  const maybeStr = value.toString();
+  if (isString(maybeStr)) {
+    return maybeStr;
+  } else {
+    return null;
+  }
+}
+
+/**
+ * Convert a value into a string if that is possible.
+ *
+ * @param {any} value The value to convert into a string.
+ * @returns {string} The `value` as a string.
+ * @throws {TypeError} The `value` is not stringable.
+ */
+function checkedToString(value) {
+  if (isString(value)) {
+    return value;
+  }
+
+  const maybeStr = maybeToString(value);
+  if (maybeStr === null) {
+    throw new TypeError(typeError);
+  }
+
+  return maybeStr;
+}
+
+/**
  * Checks if a value is a string.
  *
  * @param {any} value The value of interest.
@@ -9341,167 +9704,555 @@ function isString(value) {
 }
 
 /**
- * Checks if a value can be converted into a string.
- *
- * @param {any} value The value of interest.
- * @returns {boolean} `true` if `value` is stringable, `false` otherwise.
- */
-function isStringable(value) {
-  if (value === undefined || value === null) {
-    return false;
-  }
-
-  if (typeof value.toString !== typeofFunction) {
-    return false;
-  }
-
-  const str = value.toString();
-  return isString(str);
-}
-
-/**
- * Parses options provided to {@link escapeShellArg} or {@link quoteShellArg}.
- *
- * @param {object} args The arguments for this function.
- * @param {object} args.options The options for escaping.
- * @param {string} [args.options.shell] The shell to escape for.
- * @param {boolean} [args.options.interpolation] Is interpolation enabled.
- * @param {object} args.process The `process` values.
- * @param {object} args.process.env The environment variables.
- * @param {object} deps The dependencies for this function.
- * @param {Function} deps.getDefaultShell Get the default shell for the system.
- * @param {Function} deps.getShellName Get the name of a shell.
- * @returns {object} The parsed arguments.
- */
-function parseOptions(
-  { options: { interpolation, shell }, process: { env } },
-  { getDefaultShell, getShellName }
-) {
-  interpolation = interpolation ? true : false;
-  shell = isString(shell) ? shell : getDefaultShell({ env });
-
-  const shellName = getShellName({ shell }, { resolveExecutable });
-  return { interpolation, shellName };
-}
-
-/**
- * Escapes an argument for the given shell.
- *
- * @param {object} args The arguments for this function.
- * @param {string} args.arg The argument to escape.
- * @param {boolean} args.interpolation Is interpolation enabled.
- * @param {boolean} args.quoted Is `arg` being quoted.
- * @param {string} args.shellName The name of the shell to escape `arg` for.
- * @param {object} deps The dependencies for this function.
- * @param {Function} deps.getEscapeFunction Get the escape function for a shell.
- * @returns {string} The escaped argument.
- * @throws {TypeError} The argument to escape is not stringable.
- */
-function escape$1(
-  { arg, interpolation, quoted, shellName },
-  { getEscapeFunction }
-) {
-  if (!isStringable(arg)) {
-    throw new TypeError(typeError);
-  }
-
-  const argAsString = arg.toString();
-  const escape = getEscapeFunction(shellName);
-  const escapedArg = escape(argAsString, { interpolation, quoted });
-  return escapedArg;
-}
-
-/**
- * Quotes and escape an argument for the given shell.
- *
- * @param {object} args The arguments for this function.
- * @param {string} args.arg The argument to escape.
- * @param {string} args.shellName The name of the shell to escape `arg` for.
- * @param {object} deps The dependencies for this function.
- * @param {Function} deps.getEscapeFunction Get the escape function for a shell.
- * @param {Function} deps.getQuoteFunction Get the quote function for a shell.
- * @returns {string} The quoted and escaped argument.
- * @throws {TypeError} The argument to escape is not stringable.
- */
-function quote$1({ arg, shellName }, { getEscapeFunction, getQuoteFunction }) {
-  const escapedArg = escape$1(
-    { arg, interpolation: false, quoted: true, shellName },
-    { getEscapeFunction }
-  );
-  const quote = getQuoteFunction(shellName);
-  const escapedAndQuotedArg = quote(escapedArg);
-  return escapedAndQuotedArg;
-}
-
-/**
- * Escapes an argument for the given shell.
- *
- * @param {object} args The arguments for this function.
- * @param {string} args.arg The argument to escape.
- * @param {object} args.options The options for escaping `arg`.
- * @param {boolean} [args.options.interpolation] Is interpolation enabled.
- * @param {string} [args.options.shell] The shell to escape `arg` for.
- * @param {object} args.process The `process` values.
- * @param {object} args.process.env The environment variables.
- * @param {object} deps The dependencies for this function.
- * @param {Function} deps.getDefaultShell Get the default shell for the system.
- * @param {Function} deps.getEscapeFunction Get an escape function for a shell.
- * @param {Function} deps.getShellName Get the name of a shell.
- * @returns {string} The escaped argument.
- */
-function escapeShellArg(
-  { arg, options: { interpolation, shell }, process: { env } },
-  { getDefaultShell, getEscapeFunction, getShellName }
-) {
-  const options = parseOptions(
-    { options: { interpolation, shell }, process: { env } },
-    { getDefaultShell, getShellName }
-  );
-  return escape$1(
-    {
-      arg,
-      interpolation: options.interpolation,
-      quoted: false,
-      shellName: options.shellName,
-    },
-    { getEscapeFunction }
-  );
-}
-
-/**
- * Quotes and escape an argument for the given shell.
- *
- * @param {object} args The arguments for this function.
- * @param {string} args.arg The argument to escape.
- * @param {object} args.options The options for escaping `arg`.
- * @param {string} [args.options.shell] The shell to escape `arg` for.
- * @param {object} args.process The `process` values.
- * @param {object} args.process.env The environment variables.
- * @param {object} deps The dependencies for this function.
- * @param {Function} deps.getDefaultShell Get the default shell for the system.
- * @param {Function} deps.getEscapeFunction Get an escape function for a shell.
- * @param {Function} deps.getQuoteFunction Get a quote function for a shell.
- * @param {Function} deps.getShellName Get the name of a shell.
- * @returns {string} The quoted and escaped argument.
- */
-function quoteShellArg(
-  { arg, options: { shell }, process: { env } },
-  { getDefaultShell, getEscapeFunction, getQuoteFunction, getShellName }
-) {
-  const options = parseOptions(
-    { options: { shell }, process: { env } },
-    { getDefaultShell, getShellName }
-  );
-  return quote$1(
-    { arg, shellName: options.shellName },
-    { getEscapeFunction, getQuoteFunction }
-  );
-}
-
-/**
- * @overview Provides functionality specifically for Unix systems.
+ * @overview Provides functionality related to working with executables.
  * @license MPL-2.0
  */
+
+
+/**
+ * Build error messages for when executables cannot be found.
+ *
+ * @param {string} executable The executable being looked up.
+ * @returns {string} The executable not found error message.
+ */
+function notFoundError(executable) {
+  return `No executable could be found for ${executable}`;
+}
+
+/**
+ * Resolves the location of an executable given an arbitrary valid string
+ * representation of that executable.
+ *
+ * To obtain the location of the executable this function (if necessary):
+ * - Expands the provided string to an absolute path.
+ * - Follows symbolic links.
+ *
+ * @param {object} args The arguments for this function.
+ * @param {Object<string, string>} args.env The environment variables.
+ * @param {string} args.executable A string representation of the executable.
+ * @param {object} deps The dependencies for this function.
+ * @param {Function} deps.exists A function to check if a file exists.
+ * @param {Function} deps.readlink A function to resolve (sym)links.
+ * @param {Function} deps.which A function to perform a `which(1)`-like lookup.
+ * @returns {string} The full path to the binary of the executable.
+ * @throws {Error} If the executable could not be found.
+ */
+function resolveExecutable(
+  { env, executable },
+  { exists, readlink, which },
+) {
+  let resolved = executable;
+  try {
+    const path = hasOwn(env, "PATH")
+      ? env.PATH
+      : hasOwn(env, "Path")
+        ? env.Path
+        : undefined;
+    resolved = which(resolved, { path });
+  } catch (_) {
+    throw new Error(notFoundError(executable));
+  }
+
+  if (!exists(resolved)) {
+    throw new Error(notFoundError(executable));
+  }
+
+  try {
+    resolved = readlink(resolved);
+  } catch (_) {
+    // An error will be thrown if the executable is not a (sym)link, this is not
+    // a problem so the error is ignored
+  }
+
+  return resolved;
+}
+
+/**
+ * @overview Provides functionality for parsing shescape options.
+ * @license MPL-2.0
+ */
+
+
+/**
+ * The identifier for 'no shell' or the absence of a shell.
+ *
+ * @constant
+ * @type {symbol}
+ */
+const noShell = Symbol();
+
+/**
+ * Build error messages for unsupported shells.
+ *
+ * @param {string} shellName The full name of a shell.
+ * @returns {string} The unsupported shell error message.
+ */
+function unsupportedError$2(shellName) {
+  return `Shescape does not support the shell ${shellName}`;
+}
+
+/**
+ * Parses options provided to shescape.
+ *
+ * @param {object} args The arguments for this function.
+ * @param {Object<string, string>} args.env The environment variables.
+ * @param {object} args.options The options for escaping.
+ * @param {object} deps The dependencies for this function.
+ * @param {Function} deps.getDefaultShell Function to get the default shell.
+ * @param {Function} deps.getShellName Function to get the name of a shell.
+ * @param {Function} deps.isShellSupported Function to see if a shell is usable.
+ * @returns {object} The parsed arguments.
+ * @throws {Error} The shell is not supported or could not be found.
+ */
+function parseOptions(
+  { env, options },
+  { getDefaultShell, getShellName, isShellSupported },
+) {
+  let flagProtection = hasOwn(options, "flagProtection")
+    ? options.flagProtection
+    : undefined;
+  let shell = hasOwn(options, "shell") ? options.shell : undefined;
+
+  flagProtection =
+    flagProtection === undefined ? true : flagProtection ? true : false;
+
+  let shellName = noShell;
+  if (shell !== false) {
+    if (!isString(shell)) {
+      shell = getDefaultShell({ env });
+    }
+
+    shellName = getShellName({ env, shell }, { resolveExecutable });
+  }
+
+  if (!isShellSupported(shellName)) {
+    throw new Error(unsupportedError$2(shellName));
+  }
+
+  return { flagProtection, shellName };
+}
+
+/**
+ * @overview Provides functionality for the Bourne-again shell (Bash).
+ * @license MPL-2.0
+ */
+
+/**
+ * Escape an argument for use in Bash.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArg$7(arg) {
+  return arg
+    .replace(/[\0\u0008\r\u001B\u009B]/gu, "")
+    .replace(/\n/gu, " ")
+    .replace(/\\/gu, "\\\\")
+    .replace(/(?<=^|\s)([#~])/gu, "\\$1")
+    .replace(/(["$&'()*;<>?`{|])/gu, "\\$1")
+    .replace(/(?<=[:=])(~)(?=[\s+\-/0:=]|$)/gu, "\\$1")
+    .replace(/([\t ])/gu, "\\$1");
+}
+
+/**
+ * Returns a function to escape arguments for use in Bash for the given use
+ * case.
+ *
+ * @returns {Function} A function to escape arguments.
+ */
+function getEscapeFunction$9() {
+  return escapeArg$7;
+}
+
+/**
+ * Escape an argument for use in Bash when the argument is being quoted.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArgForQuoted$5(arg) {
+  return arg
+    .replace(/[\0\u0008\u001B\u009B]/gu, "")
+    .replace(/\r(?!\n)/gu, "")
+    .replace(/'/gu, "'\\''");
+}
+
+/**
+ * Quotes an argument for use in Bash.
+ *
+ * @param {string} arg The argument to quote.
+ * @returns {string} The quoted argument.
+ */
+function quoteArg$5(arg) {
+  return `'${arg}'`;
+}
+
+/**
+ * Returns a pair of functions to escape and quote arguments for use in Bash.
+ *
+ * @returns {Function[]} A function pair to escape & quote arguments.
+ */
+function getQuoteFunction$9() {
+  return [escapeArgForQuoted$5, quoteArg$5];
+}
+
+/**
+ * Remove any prefix from the provided argument that might be interpreted as a
+ * flag on Unix systems for Bash.
+ *
+ * @param {string} arg The argument to update.
+ * @returns {string} The updated argument.
+ */
+function stripFlagPrefix$7(arg) {
+  return arg.replace(/^-+/gu, "");
+}
+
+/**
+ * Returns a function to protect against flag injection for Bash.
+ *
+ * @returns {Function} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$9() {
+  return stripFlagPrefix$7;
+}
+
+/**
+ * @overview Provides functionality for the C shell (csh).
+ * @license MPL-2.0
+ */
+
+
+/**
+ * Escape an argument for use in csh.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArg$6(arg) {
+  const textEncoder = new node_util.TextEncoder();
+  return arg
+    .replace(/[\0\u0008\r\u001B\u009B]/gu, "")
+    .replace(/\n/gu, " ")
+    .replace(/\\/gu, "\\\\")
+    .replace(/(?<=^|\s)(~)/gu, "\\$1")
+    .replace(/!(?!$)/gu, "\\!")
+    .replace(/(["#$&'()*;<>?[`{|])/gu, "\\$1")
+    .replace(/([\t ])/gu, "\\$1")
+    .split("")
+    .map(
+      // Due to a bug in C shell version 20110502-7, when a character whose
+      // utf-8 encoding includes the bytes 0xA0 (160 in decimal) appears in
+      // an argument after an escaped character, it will hang and endlessly
+      // consume memory unless the character is escaped with quotes.
+      // ref: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=995013
+      (char) => (textEncoder.encode(char).includes(160) ? `'${char}'` : char),
+    )
+    .join("");
+}
+
+/**
+ * Returns a function to escape arguments for use in csh for the given use case.
+ *
+ * @returns {Function} A function to escape arguments.
+ */
+function getEscapeFunction$8() {
+  return escapeArg$6;
+}
+
+/**
+ * Escape an argument for use in csh when the argument is being quoted.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArgForQuoted$4(arg) {
+  return arg
+    .replace(/[\0\u0008\r\u001B\u009B]/gu, "")
+    .replace(/\n/gu, " ")
+    .replace(/'/gu, "'\\''")
+    .replace(/\\!$/gu, "\\\\!")
+    .replace(/!(?!$)/gu, "\\!");
+}
+
+/**
+ * Quotes an argument for use in csh.
+ *
+ * @param {string} arg The argument to quote.
+ * @returns {string} The quoted argument.
+ */
+function quoteArg$4(arg) {
+  return `'${arg}'`;
+}
+
+/**
+ * Returns a pair of functions to escape and quote arguments for use in csh.
+ *
+ * @returns {Function[]} A function pair to escape & quote arguments.
+ */
+function getQuoteFunction$8() {
+  return [escapeArgForQuoted$4, quoteArg$4];
+}
+
+/**
+ * Remove any prefix from the provided argument that might be interpreted as a
+ * flag on Unix systems for csh.
+ *
+ * @param {string} arg The argument to update.
+ * @returns {string} The updated argument.
+ */
+function stripFlagPrefix$6(arg) {
+  return arg.replace(/^-+/gu, "");
+}
+
+/**
+ * Returns a function to protect against flag injection for csh.
+ *
+ * @returns {Function} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$8() {
+  return stripFlagPrefix$6;
+}
+
+/**
+ * @overview Provides functionality for the Debian Almquist shell (Dash).
+ * @license MPL-2.0
+ */
+
+/**
+ * Escape an argument for use in Dash.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArg$5(arg) {
+  return arg
+    .replace(/[\0\u0008\r\u001B\u009B]/gu, "")
+    .replace(/\n/gu, " ")
+    .replace(/\\/gu, "\\\\")
+    .replace(/(?<=^|\s)([#~])/gu, "\\$1")
+    .replace(/(["$&'()*;<>?`|])/gu, "\\$1")
+    .replace(/([\t ])/gu, "\\$1");
+}
+
+/**
+ * Returns a function to escape arguments for use in Dash for the given use
+ * case.
+ *
+ * @returns {Function} A function to escape arguments.
+ */
+function getEscapeFunction$7() {
+  return escapeArg$5;
+}
+
+/**
+ * Escape an argument for use in Dash when the argument is being quoted.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArgForQuoted$3(arg) {
+  return arg
+    .replace(/[\0\u0008\u001B\u009B]/gu, "")
+    .replace(/\r(?!\n)/gu, "")
+    .replace(/'/gu, "'\\''");
+}
+
+/**
+ * Quotes an argument for use in Dash.
+ *
+ * @param {string} arg The argument to quote.
+ * @returns {string} The quoted argument.
+ */
+function quoteArg$3(arg) {
+  return `'${arg}'`;
+}
+
+/**
+ * Returns a pair of functions to escape and quote arguments for use in Dash.
+ *
+ * @returns {Function[]} A function pair to escape & quote arguments.
+ */
+function getQuoteFunction$7() {
+  return [escapeArgForQuoted$3, quoteArg$3];
+}
+
+/**
+ * Remove any prefix from the provided argument that might be interpreted as a
+ * flag on Unix systems for Dash.
+ *
+ * @param {string} arg The argument to update.
+ * @returns {string} The updated argument.
+ */
+function stripFlagPrefix$5(arg) {
+  return arg.replace(/^-+/gu, "");
+}
+
+/**
+ * Returns a function to protect against flag injection for Dash.
+ *
+ * @returns {Function} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$7() {
+  return stripFlagPrefix$5;
+}
+
+/**
+ * @overview Provides functionality for shell-less escaping on Unix systems.
+ * @license MPL-2.0
+ */
+
+/**
+ * The error message for use of quoting functionality.
+ *
+ * @constant
+ * @type {string}
+ */
+const unsupportedError$1 = "Quoting is not supported when no shell is used";
+
+/**
+ * Escape an argument for shell-less use.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArg$4(arg) {
+  return arg.replace(/[\0\u0008\u001B\u009B]/gu, "").replace(/\r(?!\n)/gu, "");
+}
+
+/**
+ * Returns a function to escape arguments for shell-less use.
+ *
+ * @returns {Function} A function to escape arguments.
+ */
+function getEscapeFunction$6() {
+  return escapeArg$4;
+}
+
+/**
+ * Returns the provided value.
+ *
+ * @throws {Error} Always.
+ */
+function unsupported$1() {
+  throw new Error(unsupportedError$1);
+}
+
+/**
+ * Returns a pair of functions that will indicate this operation is unsupported.
+ *
+ * @returns {Function[]} A pair of functions.
+ */
+function getQuoteFunction$6() {
+  return [unsupported$1, unsupported$1];
+}
+
+/**
+ * Remove any prefix from the provided argument that might be interpreted as a
+ * flag on Unix systems.
+ *
+ * @param {string} arg The argument to update.
+ * @returns {string} The updated argument.
+ */
+function stripFlagPrefix$4(arg) {
+  return arg.replace(/^-+/gu, "");
+}
+
+/**
+ * Returns a function to protect against flag injection for Unix systems.
+ *
+ * @returns {Function} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$6() {
+  return stripFlagPrefix$4;
+}
+
+/**
+ * @overview Provides functionality for the Z shell (Zsh).
+ * @license MPL-2.0
+ */
+
+/**
+ * Escape an argument for use in Zsh.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArg$3(arg) {
+  return arg
+    .replace(/[\0\u0008\r\u001B\u009B]/gu, "")
+    .replace(/\n/gu, " ")
+    .replace(/\\/gu, "\\\\")
+    .replace(/(?<=^|\s)([#=~])/gu, "\\$1")
+    .replace(/(["$&'()*;<>?[\]`{|}])/gu, "\\$1")
+    .replace(/([\t ])/gu, "\\$1");
+}
+
+/**
+ * Returns a function to escape arguments for use in Zsh for the given use case.
+ *
+ * @returns {Function} A function to escape arguments.
+ */
+function getEscapeFunction$5() {
+  return escapeArg$3;
+}
+
+/**
+ * Escape an argument for use in Zsh when the argument is being quoted.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArgForQuoted$2(arg) {
+  return arg
+    .replace(/[\0\u0008\u001B\u009B]/gu, "")
+    .replace(/\r(?!\n)/gu, "")
+    .replace(/'/gu, "'\\''");
+}
+
+/**
+ * Quotes an argument for use in Zsh.
+ *
+ * @param {string} arg The argument to quote.
+ * @returns {string} The quoted argument.
+ */
+function quoteArg$2(arg) {
+  return `'${arg}'`;
+}
+
+/**
+ * Returns a pair of functions to escape and quote arguments for use in Zsh.
+ *
+ * @returns {Function[]} A function pair to escape & quote arguments.
+ */
+function getQuoteFunction$5() {
+  return [escapeArgForQuoted$2, quoteArg$2];
+}
+
+/**
+ * Remove any prefix from the provided argument that might be interpreted as a
+ * flag on Unix systems for Zsh.
+ *
+ * @param {string} arg The argument to update.
+ * @returns {string} The updated argument.
+ */
+function stripFlagPrefix$3(arg) {
+  return arg.replace(/^-+/gu, "");
+}
+
+/**
+ * Returns a function to protect against flag injection for Zsh.
+ *
+ * @returns {Function} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$5() {
+  return stripFlagPrefix$3;
+}
+
+/**
+ * @overview Provides functionality for Unix systems.
+ * @license MPL-2.0
+ */
+
 
 /**
  * The name of the Bourne-again shell (Bash) binary.
@@ -9510,6 +10261,14 @@ function quoteShellArg(
  * @type {string}
  */
 const binBash = "bash";
+
+/**
+ * The name of the C shell (csh) binary.
+ *
+ * @constant
+ * @type {string}
+ */
+const binCsh = "csh";
 
 /**
  * The name of the Debian Almquist shell (Dash) binary.
@@ -9528,111 +10287,6 @@ const binDash = "dash";
 const binZsh = "zsh";
 
 /**
- * Escapes a shell argument for use in Bash(-like shells).
- *
- * @param {string} arg The argument to escape.
- * @param {object} options The escape options.
- * @param {boolean} options.interpolation Is interpolation enabled.
- * @param {boolean} options.quoted Is `arg` being quoted.
- * @returns {string} The escaped argument.
- */
-function escapeArgBash(arg, { interpolation, quoted }) {
-  let result = arg.replace(/[\0\u0008\u001B\u009B]/gu, "");
-
-  if (interpolation) {
-    result = result
-      .replace(/\\/gu, "\\\\")
-      .replace(/\n/gu, " ")
-      .replace(/(^|\s)([#~])/gu, "$1\\$2")
-      .replace(/(["$&'()*;<>?`{|])/gu, "\\$1")
-      .replace(/(?<=[:=])(~)(?=[\s+\-/0:=]|$)/gu, "\\$1")
-      .replace(/([\t ])/gu, "\\$1");
-  } else if (quoted) {
-    result = result.replace(/'/gu, `'\\''`);
-  }
-
-  result = result.replace(/\r(?!\n)/gu, "");
-
-  return result;
-}
-
-/**
- * Escapes a shell argument for use in Dash.
- *
- * @param {string} arg The argument to escape.
- * @param {object} options The escape options.
- * @param {boolean} options.interpolation Is interpolation enabled.
- * @param {boolean} options.quoted Is `arg` being quoted.
- * @returns {string} The escaped argument.
- */
-function escapeArgDash(arg, { interpolation, quoted }) {
-  let result = arg.replace(/[\0\u0008\u001B\u009B]/gu, "");
-
-  if (interpolation) {
-    result = result
-      .replace(/\\/gu, "\\\\")
-      .replace(/\n/gu, " ")
-      .replace(/(^|\s)([#~])/gu, "$1\\$2")
-      .replace(/(["$&'()*;<>?`|])/gu, "\\$1")
-      .replace(/([\t\n ])/gu, "\\$1");
-  } else if (quoted) {
-    result = result.replace(/'/gu, `'\\''`);
-  }
-
-  result = result.replace(/\r(?!\n)/gu, "");
-
-  return result;
-}
-
-/**
- * Escapes a shell argument for use in Zsh.
- *
- * @param {string} arg The argument to escape.
- * @param {object} options The escape options.
- * @param {boolean} options.interpolation Is interpolation enabled.
- * @param {boolean} options.quoted Is `arg` being quoted.
- * @returns {string} The escaped argument.
- */
-function escapeArgZsh(arg, { interpolation, quoted }) {
-  let result = arg.replace(/[\0\u0008\u001B\u009B]/gu, "");
-
-  if (interpolation) {
-    result = result
-      .replace(/\\/gu, "\\\\")
-      .replace(/\n/gu, " ")
-      .replace(/(^|\s)([#=~])/gu, "$1\\$2")
-      .replace(/(["$&'()*;<>?[\]`{|}])/gu, "\\$1")
-      .replace(/([\t ])/gu, "\\$1");
-  } else if (quoted) {
-    result = result.replace(/'/gu, `'\\''`);
-  }
-
-  result = result.replace(/\r(?!\n)/gu, "");
-
-  return result;
-}
-
-/**
- * Quotes an argument for use in a Unix shell.
- *
- * @param {string} arg The argument to quote.
- * @returns {string} The quoted argument.
- */
-function quoteArg$1(arg) {
-  return `'${arg}'`;
-}
-
-/**
- * Returns the basename of a directory or file path on a Unix system.
- *
- * @param {string} fullPath A Unix-style directory or file path.
- * @returns {string} The basename of `fullPath`.
- */
-function getBasename$1(fullPath) {
-  return path__namespace.basename(fullPath);
-}
-
-/**
  * Returns the default shell for Unix systems.
  *
  * For more information, see `options.shell` in:
@@ -9647,36 +10301,64 @@ function getDefaultShell$1() {
 /**
  * Returns a function to escape arguments for use in a particular shell.
  *
- * @param {string} shellName The name of a Unix shell.
- * @returns {Function?} A function to escape arguments for use in the shell.
+ * @param {string | symbol} shellName The name of a Unix shell.
+ * @returns {Function | undefined} A function to escape arguments.
  */
-function getEscapeFunction$1(shellName) {
+function getEscapeFunction$4(shellName) {
   switch (shellName) {
+    case noShell:
+      return getEscapeFunction$6();
     case binBash:
-      return escapeArgBash;
+      return getEscapeFunction$9();
+    case binCsh:
+      return getEscapeFunction$8();
     case binDash:
-      return escapeArgDash;
+      return getEscapeFunction$7();
     case binZsh:
-      return escapeArgZsh;
-    default:
-      return null;
+      return getEscapeFunction$5();
   }
 }
 
 /**
- * Returns a function to quote arguments for use in a particular shell.
+ * Returns a pair of functions to escape and quote arguments for use in a
+ * particular shell.
  *
- * @param {string} shellName The name of a Unix shell.
- * @returns {Function?} A function to quote arguments for use in the shell.
+ * @param {string | symbol} shellName The name of a Unix shell.
+ * @returns {Function[] | undefined} A function pair to escape & quote arguments.
  */
-function getQuoteFunction$1(shellName) {
+function getQuoteFunction$4(shellName) {
   switch (shellName) {
+    case noShell:
+      return getQuoteFunction$6();
     case binBash:
+      return getQuoteFunction$9();
+    case binCsh:
+      return getQuoteFunction$8();
     case binDash:
+      return getQuoteFunction$7();
     case binZsh:
-      return quoteArg$1;
-    default:
-      return null;
+      return getQuoteFunction$5();
+  }
+}
+
+/**
+ * Returns a function to protect against flag injection.
+ *
+ * @param {string | symbol} shellName The name of a Unix shell.
+ * @returns {Function | undefined} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$4(shellName) {
+  switch (shellName) {
+    case noShell:
+      return getFlagProtectionFunction$6();
+    case binBash:
+      return getFlagProtectionFunction$9();
+    case binCsh:
+      return getFlagProtectionFunction$8();
+    case binDash:
+      return getFlagProtectionFunction$7();
+    case binZsh:
+      return getFlagProtectionFunction$5();
   }
 }
 
@@ -9684,37 +10366,318 @@ function getQuoteFunction$1(shellName) {
  * Determines the name of the shell identified by a file path or file name.
  *
  * @param {object} args The arguments for this function.
+ * @param {Object<string, string>} args.env The environment variables.
  * @param {string} args.shell The name or path of the shell.
  * @param {object} deps The dependencies for this function.
  * @param {Function} deps.resolveExecutable Resolve the path to an executable.
  * @returns {string} The shell name.
  */
-function getShellName$1({ shell }, { resolveExecutable }) {
+function getShellName$1({ env, shell }, { resolveExecutable }) {
   shell = resolveExecutable(
-    { executable: shell },
-    { exists: fs__namespace.existsSync, readlink: fs__namespace.readlinkSync, which: which.sync }
+    { env, executable: shell },
+    { exists: fs__namespace.existsSync, readlink: fs__namespace.readlinkSync, which: which.sync },
   );
 
-  const shellName = getBasename$1(shell);
-  if (getEscapeFunction$1(shellName) === null) {
-    return binBash;
-  }
-
+  const shellName = path__namespace.basename(shell);
   return shellName;
+}
+
+/**
+ * Checks if the given shell is supported on Unix or not.
+ *
+ * @param {string} shellName The name of a Unix shell.
+ * @returns {boolean} `true` if the shell is supported, `false` otherwise.
+ */
+function isShellSupported$1(shellName) {
+  return getEscapeFunction$4(shellName) !== undefined;
 }
 
 var unix = /*#__PURE__*/Object.freeze({
   __proto__: null,
   getDefaultShell: getDefaultShell$1,
-  getEscapeFunction: getEscapeFunction$1,
-  getQuoteFunction: getQuoteFunction$1,
-  getShellName: getShellName$1
+  getEscapeFunction: getEscapeFunction$4,
+  getFlagProtectionFunction: getFlagProtectionFunction$4,
+  getQuoteFunction: getQuoteFunction$4,
+  getShellName: getShellName$1,
+  isShellSupported: isShellSupported$1
 });
 
 /**
- * @overview Provides functionality specifically for Windows systems.
+ * @overview Provides functionality for the Windows Command Prompt.
  * @license MPL-2.0
  */
+
+/**
+ * Escape an argument for use in CMD.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArg$2(arg) {
+  let shouldEscapeSpecialChar = true;
+  return arg
+    .replace(/[\0\u0008\r\u001B\u009B]/gu, "")
+    .replace(/\n/gu, " ")
+    .replace(/(?<!\\)(\\*)"/gu, '$1$1\\"')
+    .split("")
+    .map(
+      // Due to the way CMD determines if it is inside a quoted section, and the
+      // way we escape double quotes, whether or not special character need to
+      // be escaped depends on the number of double quotes that proceed it. So,
+      // we flip a flag for every double quote we encounter and escape special
+      // characters conditionally on that flag.
+      (char) => {
+        if (char === '"') {
+          shouldEscapeSpecialChar = !shouldEscapeSpecialChar;
+        } else if (shouldEscapeSpecialChar && /[%&<>^|]/u.test(char)) {
+          return `^${char}`;
+        }
+
+        return char;
+      },
+    )
+    .join("");
+}
+
+/**
+ * Returns a function to escape arguments for use in CMD for the given use case.
+ *
+ * @returns {Function} A function to escape arguments.
+ */
+function getEscapeFunction$3() {
+  return escapeArg$2;
+}
+
+/**
+ * Escape an argument for use in CMD when the argument is being quoted.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArgForQuoted$1(arg) {
+  return escapeArg$2(arg).replace(/(?<!\\)(\\*)([\t ])/gu, "$1$1$2");
+}
+
+/**
+ * Quotes an argument for use in CMD.
+ *
+ * @param {string} arg The argument to quote.
+ * @returns {string} The quoted argument.
+ */
+function quoteArg$1(arg) {
+  return arg.replace(/([\t ]+)/gu, '"$1"');
+}
+
+/**
+ * Returns a pair of functions to escape and quote arguments for use in CMD.
+ *
+ * @returns {Function[]} A function pair to escape & quote arguments.
+ */
+function getQuoteFunction$3() {
+  return [escapeArgForQuoted$1, quoteArg$1];
+}
+
+/**
+ * Remove any prefix from the provided argument that might be interpreted as a
+ * flag on Windows systems for CMD.
+ *
+ * @param {string} arg The argument to update.
+ * @returns {string} The updated argument.
+ */
+function stripFlagPrefix$2(arg) {
+  return arg.replace(/^(?:-+|\/+)/gu, "");
+}
+
+/**
+ * Returns a function to protect against flag injection for CMD.
+ *
+ * @returns {Function} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$3() {
+  return stripFlagPrefix$2;
+}
+
+/**
+ * @overview Provides functionality for shell-less escaping on Windows systems.
+ * @license MPL-2.0
+ */
+
+/**
+ * The error message for use of quoting functionality.
+ *
+ * @constant
+ * @type {string}
+ */
+const unsupportedError = "Quoting is not supported when no shell is used";
+
+/**
+ * Escape an argument for shell-less use.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArg$1(arg) {
+  return arg.replace(/[\0\u0008\u001B\u009B]/gu, "").replace(/\r(?!\n)/gu, "");
+}
+
+/**
+ * Returns a function to escape arguments for shell-less use.
+ *
+ * @returns {Function} A function to escape arguments.
+ */
+function getEscapeFunction$2() {
+  return escapeArg$1;
+}
+
+/**
+ * Returns the provided value.
+ *
+ * @throws {Error} Always.
+ */
+function unsupported() {
+  throw new Error(unsupportedError);
+}
+
+/**
+ * Returns a pair of functions that will indicate this operation is unsupported.
+ *
+ * @returns {Function[]} A pair of functions.
+ */
+function getQuoteFunction$2() {
+  return [unsupported, unsupported];
+}
+
+/**
+ * Remove any prefix from the provided argument that might be interpreted as a
+ * flag on Windows systems.
+ *
+ * @param {string} arg The argument to update.
+ * @returns {string} The updated argument.
+ */
+function stripFlagPrefix$1(arg) {
+  return arg.replace(/^(?:-+|\/+)/gu, "");
+}
+
+/**
+ * Returns a function to protect against flag injection for Windows systems.
+ *
+ * @returns {Function} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$2() {
+  return stripFlagPrefix$1;
+}
+
+/**
+ * @overview Provides functionality for Windows PowerShell.
+ * @license MPL-2.0
+ */
+
+/**
+ * Escape an argument for use in PowerShell.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArg(arg) {
+  arg = arg
+    .replace(/[\0\u0008\r\u001B\u009B]/gu, "")
+    .replace(/\n/gu, " ")
+    .replace(/`/gu, "``")
+    .replace(/(?<=^|[\s\u0085])([*1-6]?)(>)/gu, "$1`$2")
+    .replace(/(?<=^|[\s\u0085])([#\-:<@\]])/gu, "`$1")
+    .replace(/([$&'(),;{|}‘’‚‛“”„])/gu, "`$1");
+
+  if (/[\s\u0085]/u.test(arg.replace(/^[\s\u0085]+/gu, ""))) {
+    arg = arg
+      .replace(/(?<!\\)(\\*)"/gu, '$1$1`"`"')
+      .replace(/(?<!\\)(\\+)$/gu, "$1$1");
+  } else {
+    arg = arg.replace(/(?<!\\)(\\*)"/gu, '$1$1\\`"');
+  }
+
+  arg = arg.replace(/([\s\u0085])/gu, "`$1");
+
+  return arg;
+}
+
+/**
+ * Returns a function to escape arguments for use in PowerShell for the given
+ * use case.
+ *
+ * @returns {Function} A function to escape arguments.
+ */
+function getEscapeFunction$1() {
+  return escapeArg;
+}
+
+/**
+ * Escape an argument for use in PowerShell when the argument is being quoted.
+ *
+ * @param {string} arg The argument to escape.
+ * @returns {string} The escaped argument.
+ */
+function escapeArgForQuoted(arg) {
+  arg = arg
+    .replace(/[\0\u0008\u001B\u009B]/gu, "")
+    .replace(/\r(?!\n)/gu, "")
+    .replace(/(['‘’‚‛])/gu, "$1$1");
+
+  if (/[\s\u0085]/u.test(arg)) {
+    arg = arg
+      .replace(/(?<!\\)(\\*)"/gu, '$1$1""')
+      .replace(/(?<!\\)(\\+)$/gu, "$1$1");
+  } else {
+    arg = arg.replace(/(?<!\\)(\\*)"/gu, '$1$1\\"');
+  }
+
+  return arg;
+}
+
+/**
+ * Quotes an argument for use in PowerShell.
+ *
+ * @param {string} arg The argument to quote and escape.
+ * @returns {string} The quoted and escaped argument.
+ */
+function quoteArg(arg) {
+  return `'${arg}'`;
+}
+
+/**
+ * Returns a pair of functions to escape and quote arguments for use in
+ * PowerShell.
+ *
+ * @returns {Function[]} A function pair to escape & quote arguments.
+ */
+function getQuoteFunction$1() {
+  return [escapeArgForQuoted, quoteArg];
+}
+
+/**
+ * Remove any prefix from the provided argument that might be interpreted as a
+ * flag on Windows systems for PowerShell.
+ *
+ * @param {string} arg The argument to update.
+ * @returns {string} The updated argument.
+ */
+function stripFlagPrefix(arg) {
+  return arg.replace(/^(?:`?-+|\/+)/gu, "");
+}
+
+/**
+ * Returns a function to protect against flag injection for PowerShell.
+ *
+ * @returns {Function} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction$1() {
+  return stripFlagPrefix;
+}
+
+/**
+ * @overview Provides functionality for Windows systems.
+ * @license MPL-2.0
+ */
+
 
 /**
  * The name of the Windows Command Prompt binary.
@@ -9733,90 +10696,17 @@ const binCmd = "cmd.exe";
 const binPowerShell = "powershell.exe";
 
 /**
- * Escapes a shell argument for use in Windows Command Prompt.
- *
- * @param {string} arg The argument to escape.
- * @param {object} options The escape options.
- * @param {boolean} options.interpolation Is interpolation enabled.
- * @param {boolean} options.quoted Is `arg` being quoted.
- * @returns {string} The escaped argument.
- */
-function escapeArgCmd(arg, { interpolation, quoted }) {
-  let result = arg
-    .replace(/[\0\u0008\u001B\u009B]/gu, "")
-    .replace(/\r?\n|\r/gu, " ");
-
-  if (interpolation) {
-    result = result.replace(/\^/gu, "^^").replace(/(["&<>|])/gu, "^$1");
-  } else if (quoted) {
-    result = result.replace(/"/gu, `""`);
-  }
-
-  return result;
-}
-
-/**
- * Escapes a shell argument for use in Windows PowerShell.
- *
- * @param {string} arg The argument to escape.
- * @param {object} options The escape options.
- * @param {boolean} options.interpolation Is interpolation enabled.
- * @param {boolean} options.quoted Is `arg` being quoted.
- * @returns {string} The escaped argument.
- */
-function escapeArgPowerShell(arg, { interpolation, quoted }) {
-  let result = arg
-    .replace(/[\0\u0008\u001B\u009B]/gu, "")
-    .replace(/`/gu, "``")
-    .replace(/\$/gu, "`$$")
-    .replace(/\r(?!\n)/gu, "");
-
-  if (interpolation) {
-    result = result
-      .replace(/\r?\n|\r/gu, " ")
-      .replace(/(^|[\s\u0085])([*1-6]?)(>)/gu, "$1$2`$3")
-      .replace(/(^|[\s\u0085])([#\-:<@\]])/gu, "$1`$2")
-      .replace(/(["&'(),;{|}‘’‚‛“”„])/gu, "`$1")
-      .replace(/([\s\u0085])/gu, "`$1");
-  } else if (quoted) {
-    result = result.replace(/(["“”„])/gu, "$1$1");
-  }
-
-  return result;
-}
-
-/**
- * Quotes an argument for use in a Windows shell.
- *
- * @param {string} arg The argument to quote.
- * @returns {string} The quoted argument.
- */
-function quoteArg(arg) {
-  return `"${arg}"`;
-}
-
-/**
- * Returns the basename of a directory or file path on a Windows system.
- *
- * @param {string} fullPath A Windows-style directory or file path.
- * @returns {string} The basename of `fullPath`.
- */
-function getBasename(fullPath) {
-  return path__namespace.win32.basename(fullPath);
-}
-
-/**
  * Returns the default shell for Windows systems.
  *
  * For more information, see:
  * https://nodejs.org/api/child_process.html#default-windows-shell.
  *
  * @param {object} args The arguments for this function.
- * @param {object} args.env The environment variables.
- * @param {string} [args.env.ComSpec] The %COMSPEC% value.
+ * @param {Object<string, string>} args.env The environment variables.
  * @returns {string} The default shell.
  */
-function getDefaultShell({ env: { ComSpec } }) {
+function getDefaultShell({ env }) {
+  const ComSpec = hasOwn(env, "ComSpec") ? env.ComSpec : undefined;
   if (ComSpec !== undefined) {
     return ComSpec;
   }
@@ -9827,33 +10717,58 @@ function getDefaultShell({ env: { ComSpec } }) {
 /**
  * Returns a function to escape arguments for use in a particular shell.
  *
- * @param {string} shellName The name of a Windows shell.
- * @returns {Function?} A function to escape arguments for use in the shell.
+ * @param {string | symbol} shellName The name of a Windows shell.
+ * @returns {Function | undefined} A function to escape arguments.
  */
 function getEscapeFunction(shellName) {
-  switch (shellName) {
+  if (shellName === noShell) {
+    return getEscapeFunction$2();
+  }
+
+  switch (shellName.toLowerCase()) {
     case binCmd:
-      return escapeArgCmd;
+      return getEscapeFunction$3();
     case binPowerShell:
-      return escapeArgPowerShell;
-    default:
-      return null;
+      return getEscapeFunction$1();
   }
 }
 
 /**
- * Returns a function to quote arguments for use in a particular shell.
+ * Returns a pair of functions to escape and quote arguments for use in a
+ * particular shell.
  *
- * @param {string} shellName The name of a Windows shell.
- * @returns {Function?} A function to quote arguments for use in the shell.
+ * @param {string | symbol} shellName The name of a Windows shell.
+ * @returns {Function[] | undefined} A function pair to escape & quote arguments.
  */
 function getQuoteFunction(shellName) {
-  switch (shellName) {
+  if (shellName === noShell) {
+    return getQuoteFunction$2();
+  }
+
+  switch (shellName.toLowerCase()) {
     case binCmd:
+      return getQuoteFunction$3();
     case binPowerShell:
-      return quoteArg;
-    default:
-      return null;
+      return getQuoteFunction$1();
+  }
+}
+
+/**
+ * Returns a function to protect against flag injection.
+ *
+ * @param {string | symbol} shellName The name of a Windows shell.
+ * @returns {Function | undefined} A function to protect against flag injection.
+ */
+function getFlagProtectionFunction(shellName) {
+  if (shellName === noShell) {
+    return getFlagProtectionFunction$2();
+  }
+
+  switch (shellName.toLowerCase()) {
+    case binCmd:
+      return getFlagProtectionFunction$3();
+    case binPowerShell:
+      return getFlagProtectionFunction$1();
   }
 }
 
@@ -9861,31 +10776,40 @@ function getQuoteFunction(shellName) {
  * Determines the name of the shell identified by a file path or file name.
  *
  * @param {object} args The arguments for this function.
+ * @param {Object<string, string>} args.env The environment variables.
  * @param {string} args.shell The name or path of the shell.
  * @param {object} deps The dependencies for this function.
  * @param {Function} deps.resolveExecutable Resolve the path to an executable.
  * @returns {string} The shell name.
  */
-function getShellName({ shell }, { resolveExecutable }) {
+function getShellName({ env, shell }, { resolveExecutable }) {
   shell = resolveExecutable(
-    { executable: shell },
-    { exists: fs__namespace.existsSync, readlink: fs__namespace.readlinkSync, which: which.sync }
+    { env, executable: shell },
+    { exists: fs__namespace.existsSync, readlink: fs__namespace.readlinkSync, which: which.sync },
   );
 
-  const shellName = getBasename(shell);
-  if (getEscapeFunction(shellName) === null) {
-    return binCmd;
-  }
-
+  const shellName = path__namespace.win32.basename(shell);
   return shellName;
+}
+
+/**
+ * Checks if the given shell is supported on Windows or not.
+ *
+ * @param {string} shellName The name of a Windows shell.
+ * @returns {boolean} `true` if the shell is supported, `false` otherwise.
+ */
+function isShellSupported(shellName) {
+  return getEscapeFunction(shellName) !== undefined;
 }
 
 var win = /*#__PURE__*/Object.freeze({
   __proto__: null,
   getDefaultShell: getDefaultShell,
   getEscapeFunction: getEscapeFunction,
+  getFlagProtectionFunction: getFlagProtectionFunction,
   getQuoteFunction: getQuoteFunction,
-  getShellName: getShellName
+  getShellName: getShellName,
+  isShellSupported: isShellSupported
 });
 
 /**
@@ -9893,6 +10817,7 @@ var win = /*#__PURE__*/Object.freeze({
  * the current system.
  * @license MPL-2.0
  */
+
 
 /**
  * The string identifying the OS type Cygwin.
@@ -9927,7 +10852,8 @@ const win32 = "win32";
  * @returns {boolean} `true` if the system is Windows, `false` otherwise.
  */
 function isWindow({ env, platform }) {
-  return env.OSTYPE === cygwin || env.OSTYPE === msys || platform === win32;
+  const osType = hasOwn(env, "OSTYPE") ? env.OSTYPE : undefined;
+  return osType === cygwin || osType === msys || platform === win32;
 }
 
 /**
@@ -9947,159 +10873,160 @@ function getHelpersByPlatform({ env, platform }) {
 }
 
 /**
- * A simple shell escape package. Use it to escape user-controlled inputs to
+ * A simple shell escape library. Use it to escape user-controlled inputs to
  * shell commands to prevent shell injection.
  *
- * @overview Entrypoint for the package.
+ * @overview Entrypoint for the library.
  * @module shescape
- * @version 1.6.2
+ * @version 2.1.0
  * @license MPL-2.0
  */
 
-/**
- * Get the helper functions for the current platform.
- *
- * @returns {object} The helper functions for the current platform.
- */
-function getPlatformHelpers() {
-  const platform = os.platform();
-  const helpers = getHelpersByPlatform({ env: process.env, platform });
-  return helpers;
-}
 
 /**
- * Converts the provided value into an array if it is not already an array and
- * returns the array.
- *
- * @param {Array | any} x The value to convert to an array if necessary.
- * @returns {Array} An array containing `x` or `x` itself.
- */
-function toArrayIfNecessary(x) {
-  return Array.isArray(x) ? x : [x];
-}
-
-/**
- * Take a single value, the argument, and escape any dangerous characters.
- *
- * Non-string inputs will be converted to strings using a `toString()` method.
- *
- * NOTE: when the `interpolation` option is set to `true`, whitespace is escaped
- * to prevent argument splitting except for cmd.exe (which does not support it).
+ * A class to escape user-controlled inputs to shell commands to prevent shell
+ * injection.
  *
  * @example
  * import { spawn } from "node:child_process";
+ * const shescape = new Shescape({ shell: false });
  * spawn(
  *   "echo",
  *   ["Hello", shescape.escape(userInput)],
  *   null // `options.shell` MUST be falsy
  * );
- * @param {string} arg The argument to escape.
- * @param {object} [options] The escape options.
- * @param {boolean} [options.interpolation=false] Is interpolation enabled.
- * @param {boolean | string} [options.shell] The shell to escape for.
- * @returns {string} The escaped argument.
- * @throws {TypeError} The argument is not stringable.
- * @since 0.1.0
- */
-function escape(arg, options = {}) {
-  const helpers = getPlatformHelpers();
-  return escapeShellArg({ arg, options, process }, helpers);
-}
-
-/**
- * Take a array of values, the arguments, and escape any dangerous characters in
- * every argument.
- *
- * Non-array inputs will be converted to one-value arrays and non-string values
- * will be converted to strings using a `toString()` method.
- *
  * @example
  * import { spawn } from "node:child_process";
+ * const shescape = new Shescape({ shell: false });
  * spawn(
  *   "echo",
  *   shescape.escapeAll(["Hello", userInput]),
  *   null // `options.shell` MUST be falsy
  * );
- * @param {string[]} args The arguments to escape.
- * @param {object} [options] The escape options.
- * @param {boolean} [options.interpolation=false] Is interpolation enabled.
- * @param {boolean | string} [options.shell] The shell to escape for.
- * @returns {string[]} The escaped arguments.
- * @throws {TypeError} One of the arguments is not stringable.
- * @since 1.1.0
- */
-function escapeAll(args, options = {}) {
-  args = toArrayIfNecessary(args);
-  return args.map((arg) => escape(arg, options));
-}
-
-/**
- * Take a single value, the argument, put OS-specific quotes around it and
- * escape any dangerous characters.
- *
- * Non-string inputs will be converted to strings using a `toString()` method.
- *
  * @example
  * import { spawn } from "node:child_process";
  * const spawnOptions = { shell: true }; // `options.shell` SHOULD be truthy
- * const shescapeOptions = { ...spawnOptions };
+ * const shescape = new Shescape({ shell: spawnOptions.shell });
  * spawn(
  *   "echo",
- *   ["Hello", shescape.quote(userInput, shescapeOptions)],
+ *   ["Hello", shescape.quote(userInput)],
  *   spawnOptions
  * );
- * @example
- * import { exec } from "node:child_process";
- * const execOptions = null || { };
- * const shescapeOptions = { ...execOptions };
- * exec(
- *   `echo Hello ${shescape.quote(userInput, shescapeOptions)}`,
- *   execOptions
- * );
- * @param {string} arg The argument to quote and escape.
- * @param {object} [options] The escape and quote options.
- * @param {boolean | string} [options.shell] The shell to escape for.
- * @returns {string} The quoted and escaped argument.
- * @throws {TypeError} The argument is not stringable.
- * @since 0.3.0
- */
-function quote(arg, options = {}) {
-  const helpers = getPlatformHelpers();
-  return quoteShellArg({ arg, options, process }, helpers);
-}
-
-/**
- * Take an array of values, the arguments, put OS-specific quotes around every
- * argument and escape any dangerous characters in every argument.
- *
- * Non-array inputs will be converted to one-value arrays and non-string values
- * will be converted to strings using a `toString()` method.
- *
  * @example
  * import { spawn } from "node:child_process";
  * const spawnOptions = { shell: true }; // `options.shell` SHOULD be truthy
- * const shescapeOptions = { ...spawnOptions };
+ * const shescape = new Shescape({ shell: spawnOptions.shell });
  * spawn(
  *   "echo",
- *   shescape.quoteAll(["Hello", userInput], shescapeOptions),
+ *   shescape.quoteAll(["Hello", userInput]),
  *   spawnOptions
  * );
- * @param {string[]} args The arguments to quote and escape.
- * @param {object} [options] The escape and quote options.
- * @param {boolean | string} [options.shell] The shell to escape for.
- * @returns {string[]} The quoted and escaped arguments.
- * @throws {TypeError} One of the arguments is not stringable.
- * @since 0.4.0
  */
-function quoteAll(args, options = {}) {
-  args = toArrayIfNecessary(args);
-  return args.map((arg) => quote(arg, options));
+class Shescape {
+  /**
+   * Create a new {@link Shescape} instance.
+   *
+   * @param {object} [options] The escape options.
+   * @param {boolean} [options.flagProtection=true] Is flag protection enabled.
+   * @param {boolean | string} [options.shell=true] The shell to escape for.
+   * @throws {Error} The shell is not supported or could not be found.
+   * @since 2.0.0
+   */
+  constructor(options = {}) {
+    const platform = os.platform();
+    const helpers = getHelpersByPlatform({ env: process.env, platform });
+
+    options = parseOptions({ env: process.env, options }, helpers);
+    const { flagProtection, shellName } = options;
+
+    {
+      const escape = helpers.getEscapeFunction(shellName);
+      if (flagProtection) {
+        const flagProtect = helpers.getFlagProtectionFunction(shellName);
+        this._escape = (arg) => flagProtect(escape(arg));
+      } else {
+        this._escape = escape;
+      }
+    }
+
+    {
+      const [escape, quote] = helpers.getQuoteFunction(shellName);
+      if (flagProtection) {
+        const flagProtect = helpers.getFlagProtectionFunction(shellName);
+        this._quote = (arg) => quote(flagProtect(escape(arg)));
+      } else {
+        this._quote = (arg) => quote(escape(arg));
+      }
+    }
+  }
+
+  /**
+   * Take a single value, the argument, and escape any dangerous characters.
+   *
+   * Non-string inputs will be converted to strings using a `toString()` method.
+   *
+   * @param {string} arg The argument to escape.
+   * @returns {string} The escaped argument.
+   * @throws {TypeError} The argument is not stringable.
+   * @since 2.0.0
+   */
+  escape(arg) {
+    const argAsString = checkedToString(arg);
+    return this._escape(argAsString);
+  }
+
+  /**
+   * Take an array of values, the arguments, and escape any dangerous characters
+   * in every argument.
+   *
+   * Non-string inputs will be converted to strings using a `toString()` method.
+   *
+   * @param {string[]} args The arguments to escape.
+   * @returns {string[]} The escaped arguments.
+   * @throws {TypeError} The arguments are not an array.
+   * @throws {TypeError} One of the arguments is not stringable.
+   * @since 2.0.0
+   */
+  escapeAll(args) {
+    return args.map((arg) => this.escape(arg));
+  }
+
+  /**
+   * Take a single value, the argument, put shell-specific quotes around it and
+   * escape any dangerous characters.
+   *
+   * Non-string inputs will be converted to strings using a `toString()` method.
+   *
+   * @param {string} arg The argument to quote and escape.
+   * @returns {string} The quoted and escaped argument.
+   * @throws {TypeError} The argument is not stringable.
+   * @throws {Error} Quoting is not supported with `shell: false`.
+   * @since 2.0.0
+   */
+  quote(arg) {
+    const argAsString = checkedToString(arg);
+    return this._quote(argAsString);
+  }
+
+  /**
+   * Take an array of values, the arguments, put shell-specific quotes around
+   * every argument and escape any dangerous characters in every argument.
+   *
+   * Non-string inputs will be converted to strings using a `toString()` method.
+   *
+   * @param {string[]} args The arguments to quote and escape.
+   * @returns {string[]} The quoted and escaped arguments.
+   * @throws {TypeError} The arguments are not an array.
+   * @throws {TypeError} One of the arguments is not stringable.
+   * @throws {Error} Quoting is not supported with `shell: false`.
+   * @since 2.0.0
+   */
+  quoteAll(args) {
+    return args.map((arg) => this.quote(arg));
+  }
 }
 
-exports.escape = escape;
-exports.escapeAll = escapeAll;
-exports.quote = quote;
-exports.quoteAll = quoteAll;
+exports.Shescape = Shescape;
 
 
 /***/ }),
@@ -10108,7 +11035,7 @@ exports.quoteAll = quoteAll;
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"lint-action","version":"2.2.0","description":"GitHub Action for detecting and fixing linting errors","repository":"github:wearerequired/lint-action","license":"MIT","private":true,"main":"./dist/index.js","scripts":{"test":"jest","lint":"eslint --max-warnings 0 \\"**/*.js\\"","lint:fix":"yarn lint --fix","format":"prettier --list-different \\"**/*.{css,html,js,json,jsx,less,md,scss,ts,tsx,vue,yaml,yml}\\"","format:fix":"yarn format --write","build":"ncc build ./src/index.js"},"dependencies":{"@actions/core":"^1.10.0","command-exists":"^1.2.9","glob":"^8.0.3","parse-diff":"^0.10.0","shescape":"^1.6.2"},"peerDependencies":{},"devDependencies":{"@samuelmeuli/eslint-config":"^6.0.0","@samuelmeuli/prettier-config":"^2.0.1","@vercel/ncc":"^0.36.0","eslint":"8.31.0","eslint-config-airbnb-base":"15.0.0","eslint-config-prettier":"^8.6.0","eslint-plugin-import":"^2.26.0","eslint-plugin-jsdoc":"^39.6.4","fs-extra":"^11.1.0","jest":"^29.3.1","prettier":"^2.8.1"},"eslintConfig":{"root":true,"extends":["@samuelmeuli/eslint-config","plugin:jsdoc/recommended"],"env":{"node":true,"jest":true},"settings":{"jsdoc":{"mode":"typescript"}},"rules":{"no-await-in-loop":"off","no-unused-vars":["error",{"args":"none","varsIgnorePattern":"^_"}],"jsdoc/check-indentation":"error","jsdoc/check-syntax":"error","jsdoc/newline-after-description":["error","never"],"jsdoc/require-description":"error","jsdoc/require-hyphen-before-param-description":"error","jsdoc/require-jsdoc":"off"}},"eslintIgnore":["node_modules/","test/linters/projects/","test/tmp/","dist/"],"jest":{"setupFiles":["./test/mock-actions-core.js"]},"prettier":"@samuelmeuli/prettier-config"}');
+module.exports = JSON.parse('{"name":"lint-action","version":"2.3.0","description":"GitHub Action for detecting and fixing linting errors","repository":"github:wearerequired/lint-action","license":"MIT","private":true,"main":"./dist/index.js","scripts":{"test":"jest","lint":"eslint --max-warnings 0 \\"**/*.js\\"","lint:fix":"yarn lint --fix","format":"prettier --list-different \\"**/*.{css,html,js,json,jsx,less,md,scss,ts,tsx,vue,yaml,yml}\\"","format:fix":"yarn format --write","build":"ncc build ./src/index.js"},"dependencies":{"@actions/core":"^1.10.0","command-exists":"^1.2.9","glob":"^8.1.0","parse-diff":"^0.11.0","shescape":"^2.1.0"},"peerDependencies":{},"devDependencies":{"@samuelmeuli/eslint-config":"^6.0.0","@samuelmeuli/prettier-config":"^2.0.1","@vercel/ncc":"^0.38.1","eslint":"8.32.0","eslint-config-airbnb-base":"15.0.0","eslint-config-prettier":"^8.6.0","eslint-plugin-import":"^2.26.0","eslint-plugin-jsdoc":"^48.0.0","fs-extra":"^11.1.0","jest":"^29.3.1","prettier":"^2.8.3"},"eslintConfig":{"root":true,"extends":["@samuelmeuli/eslint-config","plugin:jsdoc/recommended"],"env":{"node":true,"jest":true},"settings":{"jsdoc":{"mode":"typescript"}},"rules":{"no-await-in-loop":"off","no-unused-vars":["error",{"args":"none","varsIgnorePattern":"^_"}],"jsdoc/check-indentation":"error","jsdoc/check-syntax":"error","jsdoc/tag-lines":"error","jsdoc/require-description":"error","jsdoc/require-hyphen-before-param-description":"error","jsdoc/require-jsdoc":"off"}},"eslintIgnore":["node_modules/","test/linters/projects/","test/tmp/","dist/"],"jest":{"setupFiles":["./test/mock-actions-core.js"]},"prettier":"@samuelmeuli/prettier-config"}');
 
 /***/ })
 

@@ -1,20 +1,19 @@
-const glob = require("glob");
-const { Shescape } = require("shescape");
+const core = require("@actions/core");
 
 const { run } = require("../utils/action");
 const commandExists = require("../utils/command-exists");
 const { initLintResult } = require("../utils/lint-result");
-
-const { quoteAll } = new Shescape({ shell: false });
+const { getNpmBinCommand } = require("../utils/npm/get-npm-bin-command");
+const { removeTrailingPeriod } = require("../utils/string");
 
 /** @typedef {import('../utils/lint-result').LintResult} LintResult */
 
 /**
- * https://clang.llvm.org/docs/ClangFormat.html
+ * https://www.typescriptlang.org/docs/handbook/compiler-options.html
  */
-class ClangFormat {
+class TSC {
 	static get name() {
-		return "clang_format";
+		return "TypeScript";
 	}
 
 	/**
@@ -23,8 +22,17 @@ class ClangFormat {
 	 * @param {string} prefix - Prefix to the lint command
 	 */
 	static async verifySetup(dir, prefix = "") {
-		if (!(await commandExists("clang-format"))) {
-			throw new Error("clang-format is not installed");
+		// Verify that NPM is installed (required to execute ESLint)
+		if (!(await commandExists("npm"))) {
+			throw new Error("NPM is not installed");
+		}
+
+		// Verify that ESLint is installed
+		const commandPrefix = prefix || getNpmBinCommand(dir);
+		try {
+			run(`${commandPrefix} tsc -v`, { dir });
+		} catch (err) {
+			throw new Error(`${this.name} is not installed`);
 		}
 	}
 
@@ -38,12 +46,12 @@ class ClangFormat {
 	 * @returns {{status: number, stdout: string, stderr: string}} - Output of the lint command
 	 */
 	static lint(dir, extensions, args = "", fix = false, prefix = "") {
-		const pattern =
-			extensions.length === 1 ? `**/*.${extensions[0]}` : `**/*.{${extensions.join(",")}}`;
-		const files = glob.sync(pattern, { cwd: dir, nodir: true });
-		const escapedFiles = quoteAll(files).join(" ");
-		const fixArg = fix ? "-i" : "--dry-run";
-		return run(`${prefix} clang-format ${fixArg} -Werror ${args} ${escapedFiles}`, {
+		if (fix) {
+			core.warning(`${this.name} does not support auto-fixing`);
+		}
+
+		const commandPrefix = prefix || getNpmBinCommand(dir);
+		return run(`${commandPrefix} tsc --noEmit --pretty false ${args}`, {
 			dir,
 			ignoreErrors: true,
 		});
@@ -59,27 +67,33 @@ class ClangFormat {
 	static parseOutput(dir, output) {
 		const lintResult = initLintResult();
 		lintResult.isSuccess = output.status === 0;
-		if (lintResult.isSuccess || !output) {
-			return lintResult;
+
+		// example: file1.ts(4,25): error TS7005: Variable 'str' implicitly has an 'any' type.
+		const regex = /^(?<file>.+)\((?<line>\d+),(?<column>\d+)\):\s(?<code>\w+)\s(?<message>.+)$/gm;
+
+		const errors = [];
+		const matches = output.stdout.matchAll(regex);
+
+		for (const match of matches) {
+			const { file, line, column, code, message } = match.groups;
+			errors.push({ file, line, column, code, message });
 		}
 
-		const lines = output.stderr.split(/\r?\n/);
-		lintResult.error = lines.flatMap((line) => {
-			const matched = line.match(/^(.*):(\d+):\d+: error: (.*)$/);
-			if (!matched) {
-				return [];
-			}
-			const lineNumber = parseInt(matched.at(2), 10);
-			return {
-				path: matched.at(1),
-				firstLine: lineNumber,
-				lastLine: lineNumber,
-				message: matched.at(3),
+		for (const error of errors) {
+			const { file, line, message } = error;
+
+			const entry = {
+				path: file,
+				firstLine: Number(line),
+				lastLine: Number(line),
+				message: `${removeTrailingPeriod(message)}`,
 			};
-		});
+
+			lintResult.error.push(entry);
+		}
 
 		return lintResult;
 	}
 }
 
-module.exports = ClangFormat;
+module.exports = TSC;

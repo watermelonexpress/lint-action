@@ -4,6 +4,7 @@ const Swiftlint = require("../../../src/linters/swiftlint");
 
 const testName = "swiftlint";
 const linter = Swiftlint;
+const args = "";
 const commandPrefix = "";
 const extensions = ["swift"];
 
@@ -12,7 +13,7 @@ function getLintParams(dir) {
 	const stdoutFile1 = `${join(
 		dir,
 		"file1.swift",
-	)}:5:1: warning: Vertical Whitespace Violation: Limit vertical whitespace to a single empty line. Currently 2. (vertical_whitespace)`;
+	)}:5:1: warning: Vertical Whitespace Violation: Limit vertical whitespace to a single empty line; currently 2 (vertical_whitespace)`;
 	const stdoutFile2 = `${join(
 		dir,
 		"file2.swift",
@@ -79,4 +80,4 @@ function getFixParams(dir) {
 	};
 }
 
-module.exports = [testName, linter, commandPrefix, extensions, getLintParams, getFixParams];
+module.exports = [testName, linter, commandPrefix, extensions, args, getLintParams, getFixParams];

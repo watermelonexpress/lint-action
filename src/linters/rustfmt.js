@@ -1,20 +1,17 @@
-const glob = require("glob");
-const { Shescape } = require("shescape");
-
 const { run } = require("../utils/action");
 const commandExists = require("../utils/command-exists");
 const { initLintResult } = require("../utils/lint-result");
 
-const { quoteAll } = new Shescape({ shell: false });
-
 /** @typedef {import('../utils/lint-result').LintResult} LintResult */
 
+const PARSE_REGEX = /([\s\S]*?) at line (\d*):$([\s\S]*)/m;
+
 /**
- * https://clang.llvm.org/docs/ClangFormat.html
+ * https://github.com/rust-lang/rustfmt
  */
-class ClangFormat {
+class RustFmt {
 	static get name() {
-		return "clang_format";
+		return "rustfmt";
 	}
 
 	/**
@@ -23,8 +20,9 @@ class ClangFormat {
 	 * @param {string} prefix - Prefix to the lint command
 	 */
 	static async verifySetup(dir, prefix = "") {
-		if (!(await commandExists("clang-format"))) {
-			throw new Error("clang-format is not installed");
+		// Verify that cargo format is installed
+		if (!(await commandExists("cargo-fmt"))) {
+			throw new Error("Cargo format is not installed");
 		}
 	}
 
@@ -37,13 +35,12 @@ class ClangFormat {
 	 * @param {string} prefix - Prefix to the lint command
 	 * @returns {{status: number, stdout: string, stderr: string}} - Output of the lint command
 	 */
-	static lint(dir, extensions, args = "", fix = false, prefix = "") {
-		const pattern =
-			extensions.length === 1 ? `**/*.${extensions[0]}` : `**/*.{${extensions.join(",")}}`;
-		const files = glob.sync(pattern, { cwd: dir, nodir: true });
-		const escapedFiles = quoteAll(files).join(" ");
-		const fixArg = fix ? "-i" : "--dry-run";
-		return run(`${prefix} clang-format ${fixArg} -Werror ${args} ${escapedFiles}`, {
+	static lint(dir, extensions, args = "-- --color=never", fix = false, prefix = "") {
+		if (extensions.length !== 1 || extensions[0] !== "rs") {
+			throw new Error(`${this.name} error: File extensions are not configurable`);
+		}
+		const fixArg = fix ? "" : "--check";
+		return run(`${prefix} cargo fmt ${fixArg} ${args}`, {
 			dir,
 			ignoreErrors: true,
 		});
@@ -59,27 +56,27 @@ class ClangFormat {
 	static parseOutput(dir, output) {
 		const lintResult = initLintResult();
 		lintResult.isSuccess = output.status === 0;
-		if (lintResult.isSuccess || !output) {
+		if (!output.stdout) {
 			return lintResult;
 		}
 
-		const lines = output.stderr.split(/\r?\n/);
-		lintResult.error = lines.flatMap((line) => {
-			const matched = line.match(/^(.*):(\d+):\d+: error: (.*)$/);
-			if (!matched) {
-				return [];
-			}
-			const lineNumber = parseInt(matched.at(2), 10);
-			return {
-				path: matched.at(1),
-				firstLine: lineNumber,
-				lastLine: lineNumber,
-				message: matched.at(3),
-			};
-		});
+		const diffs = output.stdout.split(/^Diff in /gm).slice(1);
+		for (const diff of diffs) {
+			const [_, pathFull, line, message] = diff.match(PARSE_REGEX);
+			// Split on dir works for windows UNC paths, the substring strips out the
+			// left over '/' or '\\'
+			const path = pathFull.split(dir)[1].substring(1);
+			const lineNr = parseInt(line, 10);
+			lintResult.error.push({
+				path,
+				firstLine: lineNr,
+				lastLine: lineNr,
+				message,
+			});
+		}
 
 		return lintResult;
 	}
 }
 
-module.exports = ClangFormat;
+module.exports = RustFmt;
