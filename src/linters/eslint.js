@@ -33,7 +33,6 @@ class ESLint {
 			throw new Error(`${this.name} is not installed`);
 		}
 	}
-
 	/**
 	 * Runs the linting program and returns the command output
 	 * @param {string} dir - Directory to run the linter in
@@ -44,11 +43,12 @@ class ESLint {
 	 * @returns {{status: number, stdout: string, stderr: string}} - Output of the lint command
 	 */
 	static lint(dir, extensions, args = "", fix = false, prefix = "") {
-		const extensionsArg = extensions.map((ext) => `.${ext}`).join(",");
+		const hasEslintConfig = fs.existsSync(path.join(dir, 'eslint.config.js'));
+		const extensionsArg = hasEslintConfig ? "" : `--ext ${extensions.map((ext) => `.${ext}`).join(",")}`;
 		const fixArg = fix ? "--fix" : "";
 		const commandPrefix = prefix || getNpmBinCommand(dir);
 		return run(
-			`${commandPrefix} eslint --ext ${extensionsArg} ${fixArg} --no-color --format json ${args} "."`,
+			`${commandPrefix} eslint ${extensionsArg} ${fixArg} --no-color --format json ${args} "."`,
 			{
 				dir,
 				ignoreErrors: true,
