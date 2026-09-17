@@ -1,11 +1,9 @@
 const glob = require("glob");
-const { Shescape } = require("shescape");
 
 const { run } = require("../utils/action");
 const commandExists = require("../utils/command-exists");
 const { initLintResult } = require("../utils/lint-result");
-
-const { quoteAll } = new Shescape({ shell: false });
+const { shescape } = require("../utils/shescape");
 
 /** @typedef {import('../utils/lint-result').LintResult} LintResult */
 
@@ -41,7 +39,7 @@ class ClangFormat {
 		const pattern =
 			extensions.length === 1 ? `**/*.${extensions[0]}` : `**/*.{${extensions.join(",")}}`;
 		const files = glob.sync(pattern, { cwd: dir, nodir: true });
-		const escapedFiles = quoteAll(files).join(" ");
+		const escapedFiles = shescape.quoteAll(files).join(" ");
 		const fixArg = fix ? "-i" : "--dry-run";
 		return run(`${prefix} clang-format ${fixArg} -Werror ${args} ${escapedFiles}`, {
 			dir,

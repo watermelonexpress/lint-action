@@ -14,15 +14,21 @@ const eslintTypescriptParams = require("./params/eslint-typescript");
 const flake8Params = require("./params/flake8");
 const gofmtParams = require("./params/gofmt");
 const golintParams = require("./params/golint");
+const isortParams = require("./params/isort");
 const mypyParams = require("./params/mypy");
 const phpCodeSnifferParams = require("./params/php-codesniffer");
 const prettierParams = require("./params/prettier");
+const prettierInvalidParams = require("./params/prettier-invalid");
 const pylintParams = require("./params/pylint");
 const ruboCopParams = require("./params/rubocop");
+const ruffParams = require("./params/ruff");
 const rustfmtParams = require("./params/rustfmt");
+const standardrbParams = require("./params/standardrb");
+const staticcheckParams = require("./params/staticcheck");
 const stylelintParams = require("./params/stylelint");
+const stylelintValidParams = require("./params/stylelint-valid");
 const swiftFormatLockwood = require("./params/swift-format-lockwood");
-// const swiftFormatOfficial = require("./params/swift-format-official");
+const swiftFormatOfficial = require("./params/swift-format-official");
 const swiftlintParams = require("./params/swiftlint");
 const tscParams = require("./params/tsc");
 const xoParams = require("./params/xo");
@@ -39,21 +45,24 @@ const linterParams = [
 	flake8Params,
 	gofmtParams,
 	golintParams,
+	isortParams,
 	mypyParams,
 	phpCodeSnifferParams,
 	prettierParams,
+	prettierInvalidParams,
 	pylintParams,
 	ruboCopParams,
+	ruffParams,
 	rustfmtParams,
+	standardrbParams,
+	staticcheckParams,
 	stylelintParams,
+	stylelintValidParams,
+	swiftFormatOfficial,
 	tscParams,
 	xoParams,
 ];
-if (process.platform === "linux") {
-	// Temporarily disabled because swift-format 0.50300.0 no longer returns a proper exit code, yet
-	// returns the errors in STDERR.
-	// linterParams.push(swiftFormatOfficial);
-}
+// swift-format-lockwood and SwiftLint are installed via Mint on macOS only
 if (process.platform === "darwin") {
 	linterParams.push(swiftFormatLockwood, swiftlintParams);
 }

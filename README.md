@@ -28,7 +28,8 @@ _**Note:** The behavior of actions like this one is currently limited in the con
   - [stylelint](https://stylelint.io)
 - **Go:**
   - [gofmt](https://golang.org/cmd/gofmt)
-  - [golint](https://github.com/golang/lint)
+  - [golint](https://github.com/golang/lint) (deprecated, use `staticcheck` — golint has been [frozen and deprecated](https://github.com/golang/go/issues/38968) by its authors)
+  - [staticcheck](https://staticcheck.dev)
 - **JavaScript:**
   - [ESLint](https://eslint.org)
   - [Prettier](https://prettier.io)
@@ -38,17 +39,20 @@ _**Note:** The behavior of actions like this one is currently limited in the con
 - **Objective-C++:**
   - [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html)
 - **PHP:**
-  - [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
+  - [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer)
 - **Python:**
   - [Autopep8](https://github.com/hhatto/autopep8)
   - [Black](https://black.readthedocs.io)
   - [Flake8](http://flake8.pycqa.org)
+  - [isort](https://pycqa.github.io/isort)
   - [Mypy](https://mypy.readthedocs.io/)
   - [oitnb](https://pypi.org/project/oitnb/)
   - [Pylint](https://pylint.pycqa.org)
+  - [Ruff](https://docs.astral.sh/ruff)
 - **Ruby:**
-  - [ERB Lint](https://github.com/Shopify/erb-lint)
+  - [ERB Lint](https://github.com/Shopify/erb-lint) (requires erb_lint v0.7.0 or later)
   - [RuboCop](https://rubocop.readthedocs.io)
+  - [Standard Ruby](https://github.com/standardrb/standard)
 - **Rust:**
   - [clippy](https://github.com/rust-lang/rust-clippy)
   - [rustfmt](https://github.com/rust-lang/rustfmt)
@@ -92,12 +96,12 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Install your linters here
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
+        uses: wearerequired/lint-action@v3
         with:
           # Enable your linters here
 ```
@@ -130,19 +134,19 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v7
         with:
-          node-version: 12
+          node-version: 24
 
       # ESLint and Prettier must be in `package.json`
       - name: Install Node.js dependencies
         run: npm ci
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
+        uses: wearerequired/lint-action@v3
         with:
           eslint: true
           prettier: true
@@ -172,7 +176,7 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -182,7 +186,7 @@ jobs:
           tools: phpcs
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
+        uses: wearerequired/lint-action@v3
         with:
           php_codesniffer: true
           # Optional: Ignore warnings
@@ -211,7 +215,7 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -226,7 +230,7 @@ jobs:
           echo "${PWD}/vendor/bin" >> $GITHUB_PATH
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
+        uses: wearerequired/lint-action@v3
         with:
           php_codesniffer: true
 ```
@@ -253,7 +257,7 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v1
@@ -264,7 +268,7 @@ jobs:
         run: pip install black flake8
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
+        uses: wearerequired/lint-action@v3
         with:
           black: true
           flake8: true
@@ -292,13 +296,13 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install ClangFormat
         run: sudo apt-get install -y clang-format
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
+        uses: wearerequired/lint-action@v3
         with:
           clang_format: true
 ```
@@ -325,7 +329,7 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v1
@@ -333,7 +337,7 @@ jobs:
           dotnet-version: "6.0.x"
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
+        uses: wearerequired/lint-action@v3
         with:
           dotnet_format: true
 ```
@@ -360,7 +364,7 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v1
@@ -371,7 +375,7 @@ jobs:
         run: pip install black flake8
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
+        uses: wearerequired/lint-action@v3
         with:
           auto_fix: true
           black: true
@@ -386,7 +390,7 @@ With `auto_fix` set to `true`, by default the action will try and fix code issue
 
 ### Linter-specific options
 
-`[linter]` can be one of `autopep8`, `black`, `clang_format`, `dotnet_format`, `erblint`, `eslint`, `flake8`, `gofmt`, `golint`, `mypy`, `oitnb`, `php_codesniffer`, `prettier`, `pylint`, `rubocop`, `stylelint`, `swift_format_official`, `swift_format_lockwood`, `swiftlint` and `xo`:
+`[linter]` can be one of `autopep8`, `black`, `clang_format`, `dotnet_format`, `erblint`, `eslint`, `flake8`, `gofmt`, `golint`, `isort`, `mypy`, `oitnb`, `php_codesniffer`, `prettier`, `pylint`, `rubocop`, `ruff`, `standardrb`, `staticcheck`, `stylelint`, `swift_format_official`, `swift_format_lockwood`, `swiftlint` and `xo`:
 
 - **`[linter]`:** Enables the linter in your repository. Default: `false`
 - **`[linter]_args`**: Additional arguments to pass to the linter. Example: `eslint_args: "--max-warnings 0"` if ESLint checks should fail even if there are no errors and only warnings. Default: `""`
@@ -437,13 +441,17 @@ Some options are not available for specific linters:
 | flake8                |     ❌      |     ✅     |
 | gofmt                 |     ✅      |  ❌ (go)   |
 | golint                |     ❌      |  ❌ (go)   |
+| isort                 |     ✅      |  ❌ (py)   |
 | mypy                  |     ❌      |  ❌ (py)   |
 | oitnb                 |     ✅      |     ✅     |
 | php_codesniffer       |     ❌      |     ✅     |
 | prettier              |     ✅      |     ✅     |
 | pylint                |     ❌      |  ❌ (py)   |
 | rubocop               |     ✅      |  ❌ (rb)   |
+| ruff                  |     ✅      |  ❌ (py)   |
 | rustfmt               |     ✅      |  ❌ (rs)   |
+| standardrb            |     ✅      |  ❌ (rb)   |
+| staticcheck           |     ❌      |  ❌ (go)   |
 | stylelint             |     ✅      |     ✅     |
 | swift_format_official |     ✅      |     ✅     |
 | swift_format_lockwood |     ✅      | ❌ (swift) |

@@ -8,13 +8,17 @@ const ESLint = require("./eslint");
 const Flake8 = require("./flake8");
 const Gofmt = require("./gofmt");
 const Golint = require("./golint");
+const Isort = require("./isort");
 const Mypy = require("./mypy");
 const Oitnb = require("./oitnb");
 const PHPCodeSniffer = require("./php-codesniffer");
 const Prettier = require("./prettier");
 const Pylint = require("./pylint");
 const RuboCop = require("./rubocop");
+const Ruff = require("./ruff");
 const RustFmt = require("./rustfmt");
+const StandardRB = require("./standardrb");
+const Staticcheck = require("./staticcheck");
 const Stylelint = require("./stylelint");
 const SwiftFormatLockwood = require("./swift-format-lockwood");
 const SwiftFormatOfficial = require("./swift-format-official");
@@ -33,6 +37,9 @@ const linters = {
 	php_codesniffer: PHPCodeSniffer,
 	pylint: Pylint,
 	rubocop: RuboCop,
+	ruff: Ruff,
+	standardrb: StandardRB,
+	staticcheck: Staticcheck,
 	stylelint: Stylelint,
 	swiftlint: SwiftLint,
 	xo: XO,
@@ -44,6 +51,7 @@ const linters = {
 	clang_format: ClangFormat,
 	dotnet_format: DotnetFormat,
 	gofmt: Gofmt,
+	isort: Isort,
 	oitnb: Oitnb,
 	rustfmt: RustFmt,
 	prettier: Prettier,
